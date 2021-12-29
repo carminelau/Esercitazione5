@@ -2,6 +2,9 @@ package Node;
 
 import Statement.StatListOp;
 import Visitor.Visitor;
+import Scope.Record;
+
+import java.util.LinkedHashMap;
 
 public class ProcOp {
     private Id id;
@@ -9,6 +12,8 @@ public class ProcOp {
     private TypeOp t;
     private VarDeclListOp vars;
     private StatListOp stats;
+
+    private LinkedHashMap<String, Record> table = new LinkedHashMap<String, Record>();
 
     public ProcOp(Id id, ParamDeclListOp paramList, TypeOp t, VarDeclListOp vars, StatListOp stats) {
         this.id = id;
@@ -66,6 +71,13 @@ public class ProcOp {
 
     public void setStats(StatListOp stats) {
         this.stats = stats;
+    }
+
+    public void setTable(LinkedHashMap<String,Record> table) {
+        this.table = table;
+    }
+    public LinkedHashMap<String, Record> getTable() {
+        return table;
     }
 
     @Override

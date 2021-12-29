@@ -4,6 +4,7 @@ import Visitor.Visitor;
 
 public class Operations {
     private ExprOp e1,e2;
+    private String type;
 
     public Operations(ExprOp e1, ExprOp e2){
         this.e1 = e1;
@@ -23,5 +24,13 @@ public class Operations {
 
     public ExprOp getE2() {
         return e2;
+    }
+
+    public String getOpType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
