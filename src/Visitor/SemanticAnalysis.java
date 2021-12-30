@@ -190,6 +190,7 @@ public class SemanticAnalysis implements Visitor{
 
         programOp.getVarDeclOpList().accept(this);//popola la tabella dei simboli con le variabili
         programOp.getProcOpList().accept(this);
+        programOp.getMain().accept(this);
 
         type.exitScope();
         return programOp;
@@ -434,11 +435,6 @@ public class SemanticAnalysis implements Visitor{
     }
 
     @Override
-    public Object visit(MainOp main) {
-        return null;
-    }
-
-    @Override
     public Object visit(StatListOp statListOp) {
         for (StatOp stat : statListOp.getStatements()) {
             stat.accept(this);
@@ -592,9 +588,6 @@ public class SemanticAnalysis implements Visitor{
         procOp.getList().accept(this);
         procOp.getVars().accept(this);
 
-
-
-
         //infine devo controllare il tipo di ritorno
         ArrayList<String> resultTyes = type.cercaMetodo(procOp.getId().toString()).getReturnType();
         //Se c'è una variabile con lo stesso nome del metodo?
@@ -614,7 +607,7 @@ public class SemanticAnalysis implements Visitor{
     public Object visit(VarDeclOp varDecl) {
         varDecl.getList().accept(this);
 
-        String tipo = varDecl.getTipo();
+        String tipo = varDecl.getTipo().toString();
         Record r;
 
         for (Map.Entry<String, ExprOp> entry : varDecl.getList().getList().entrySet()) {
@@ -690,16 +683,6 @@ public class SemanticAnalysis implements Visitor{
          for (VarDeclOp varDeclOp : varDeclList.getList()) {
             varDeclOp.accept(this);
         }
-        return null;
-    }
-
-    @Override
-    public Object visit(TypeOp typeOp) {
-        return null;
-    }
-
-    @Override
-    public Object visit(ReturnStatOp returnStatOp) {
         return null;
     }
 
@@ -840,6 +823,44 @@ public class SemanticAnalysis implements Visitor{
             c.accept(this);
         }
         return null;
+    }
+
+    @Override
+    public Object visit(TypeOp typeOp) {
+        if (typeOp.toString() == null){
+            throw new Error("Tipo null");
+        } else if (!typeOp.toString().equals("bool") || !typeOp.toString().equals("real") || !typeOp.toString().equals("integer") || !typeOp.toString().equals("string") ){
+            throw new Error("Tipo non valido");
+        }
+        return null;
+    }
+
+    @Override
+    public Object visit(ReturnStatOp returnStatOp) {
+        if (returnStatOp.getExpr().getVar() instanceof Id) {
+            String id = ((Id) returnStatOp.getExpr().getVar()).toString();
+            if (type.lookup(id) == null) {
+                throw new Error("Variabile di ritorno'" + id + "' non dichiarata");
+            }else if(!type.lookup(id).getKind().equals("var")){
+                throw new Error("Metodo '" + id + "' non dichiarata");
+            }
+        } else if (returnStatOp.getExpr().getOperation() != null) {
+            returnStatOp.getExpr().getOperation().accept(this);
+        } else if (returnStatOp.getExpr().getStatement() != null && returnStatOp.getExpr().getStatement() instanceof CallProcOp c) {
+            c.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Object visit(MainOp main) {
+        type.enterScope(main.getGlobalTable());
+
+        main.getVarDeclOpList().accept(this);//popola la tabella dei simboli con le variabili
+        main.getStats().accept(this);
+
+        type.exitScope();
+        return main;
     }
 }
 

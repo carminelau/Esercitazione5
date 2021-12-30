@@ -2,12 +2,15 @@ package Node;
 
 import Statement.StatListOp;
 import Visitor.Visitor;
+import Scope.Record;
+import java.util.LinkedHashMap;
 
 public class MainOp {
 
     private VarDeclListOp varDeclOpList;
     private StatListOp stats;
 
+    private LinkedHashMap<String, Record> globalTable = new LinkedHashMap<>();
 
     public MainOp(VarDeclListOp varDeclOpList, StatListOp stats) {
         this.varDeclOpList = varDeclOpList;
@@ -33,5 +36,14 @@ public class MainOp {
     public Object accept(Visitor visitor) {
         return visitor.visit(this);
     }
+
+    public LinkedHashMap<String, Record> getGlobalTable() {
+        return globalTable;
+    }
+
+    public void setGlobalTable(LinkedHashMap<String, Record> globalTable) {
+        this.globalTable = globalTable;
+    }
+
 
 }

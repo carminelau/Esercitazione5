@@ -17,7 +17,7 @@ public class TypeOp {
 
     @Override
     public String toString() {
-            return  tipo;
+            return tipo;
     }
 
     public Object accept(Visitor visitor) {
