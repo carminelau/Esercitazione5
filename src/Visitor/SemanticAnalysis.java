@@ -7,6 +7,10 @@ import Statement.*;
 import Scope.*;
 
 import java.util.ArrayList;
+import java.util.Map;
+
+//modifiche
+//riga 188, 198, 583, 586
 
 public class SemanticAnalysis implements Visitor{
 
@@ -182,11 +186,24 @@ public class SemanticAnalysis implements Visitor{
 
     @Override
     public Object visit(ProgramOp programOp) {
-        return null;
+        type.enterScope(programOp.getGlobalTable());
+
+        programOp.getVarDeclOpList().accept(this);//popola la tabella dei simboli con le variabili
+        programOp.getProcOpList().accept(this);
+
+        type.exitScope();
+        return programOp;
     }
 
     @Override
     public Object visit(ProcListOp procListOp) {
+        for (ProcOp procOp : procListOp.getList()) {
+            procOp.accept(this);
+        }
+        //controllo se è stato implementato il metodo main altrimenti è un errore
+        if (type.lookup("main") == null) {
+            throw new Error("Deve esserci la funzione main");
+        }
         return null;
     }
 
@@ -497,8 +514,8 @@ public class SemanticAnalysis implements Visitor{
             else
                 booleanCheckType(andOp.getE1().getOperation().getOpType());
             booleanCheckType(andOp.getE2());
-            //Se non ci sono stati errori setto il tipo del nodo a "boolean"
-            andOp.setType("boolean");
+            //Se non ci sono stati errori setto il tipo del nodo a "bool"
+            andOp.setType("bool");
         } else if (operation instanceof OrOp orOp) {
             //System.out.print("or: ");
             if (orOp.getE1().getOperation() == null)
@@ -506,13 +523,13 @@ public class SemanticAnalysis implements Visitor{
             else
                 booleanCheckType(orOp.getE1().getOperation().getOpType());
             booleanCheckType(orOp.getE2());
-            //Se non ci sono stati errori setto il tipo del nodo a "boolean"
-            orOp.setType("boolean");
+            //Se non ci sono stati errori setto il tipo del nodo a "bool"
+            orOp.setType("bool");
         } else if (operation instanceof NotOp notOp) {
             //System.out.print("not: ");
             booleanCheckType(notOp.getE1());
-            //Se non ci sono stati errori setto il tipo del nodo a "boolean"
-            notOp.setType("boolean");
+            //Se non ci sono stati errori setto il tipo del nodo a "bool"
+            notOp.setType("bool");
         }
         //System.out.println(operation.getOpType());
         return null;
@@ -520,6 +537,17 @@ public class SemanticAnalysis implements Visitor{
 
     @Override
     public Object visit(IdListInitOp idListInitOp) {
+        for (Map.Entry<String, ExprOp> entry : idListInitOp.getList().entrySet()) {
+
+            String var = entry.getKey();
+            Record record = new Record();
+
+            record.setSym(var);
+            record.setKind("var");
+
+            type.addId(record);
+        }
+
         return null;
     }
 
@@ -584,11 +612,84 @@ public class SemanticAnalysis implements Visitor{
 
     @Override
     public Object visit(VarDeclOp varDecl) {
+        varDecl.getList().accept(this);
+
+        String tipo = varDecl.getTipo();
+        Record r;
+
+        for (Map.Entry<String, ExprOp> entry : varDecl.getList().getList().entrySet()) {
+
+            r = type.lookup(entry.getKey());
+            r.setType(tipo);
+            //controllo che il tipo della dichairazione corrisponda all'assegnazione int a := 5 --> ok, int a := false --> Error
+
+            if (entry.getValue().getOperation() != null) {
+
+                //se ho real num := 4.8 + 8 ;
+                entry.getValue().getOperation().accept(this);
+                if (entry.getValue().getOperation().getOpType() != null && entry.getValue().getOperation().getOpType().equals("integer") && r.getType().equals("real")) {
+                    //compatibile
+                } else if (entry.getValue().getOperation().getOpType() != null && entry.getValue().getOperation().getOpType().equals(r.getType())) {
+                    //System.out.println(entry.getKey() + " --> " + entry.getValue().getOperation().getOpType());
+                } else {
+                    throw new Error("Type missmatch");
+                }
+            } else if (entry.getValue().getVar() != null) {
+                if (entry.getValue().getVar() instanceof Id id) {
+                    if (type.lookup(id.toString()) == null) {
+                        throw new Error("Variabile " + id.toString() + " non dichiarata");
+                    } else if (r.getType().equals(type.lookup(id.toString()).getType())) {
+                        //OK
+                    } else if (type.lookup(id.toString()).getType().equals("integer") && r.getType().equals("real")) {
+                        System.out.println("no");
+                    } else {
+                        throw new Error("Type missmatch ");
+                    }
+                } else if (r.getType().equals("integer") && entry.getValue().getType().toLowerCase().contains("integer")) {
+                    //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
+                    //Compatibile
+                } else if (r.getType().equals("real") && (entry.getValue().getType().toLowerCase().contains("real") ||
+                        entry.getValue().getType().toLowerCase().contains("integer"))) {
+                    //Compatibile
+                    //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
+                } else if (entry.getValue().getType().toLowerCase().contains(r.getType()) ||
+                        entry.getValue().getType().equals("Null")) {
+                    //Compatibile
+                    //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
+                } else {
+                    throw new Error("Type missmatch ");
+                }
+            } else if (entry.getValue().getStatement() != null) {
+                //caso in cui assegno ad un'inizializzazione il valore di ritorno di una funzione---> int a:=func();
+                if (entry.getValue().getStatement() instanceof CallProcOp callProcOp) {
+                    if (type.lookup(callProcOp.getId()) == null) {
+                        throw new Error("Funzione '" + callProcOp.getId() + "' non dichiarata");
+                    }
+                    ArrayList<String> returnTypes = type.lookup(callProcOp.getId()).getReturnType();
+                    String returnType = returnTypes.get(returnTypes.size() - 1);
+                    if (returnTypes.size() > 1) {
+                        //caso in cui ho una funzione che ritorna più tipi non posso assegnarla ad un'unica variabile
+                        throw new Error("Tipo di ritorno funzione: '" +
+                                callProcOp.getId() + "' " + returnTypes + " ma tipo id: '" + entry.getKey() + "' " +
+                                type.lookup(entry.getKey()).getType());
+                    } else if (type.lookup(entry.getKey()).getType().equals("real") &&
+                            returnType.equals("integer")) {
+                        //Va bene
+                    } else if (!returnType.equals(type.lookup(entry.getKey()).getType())) {
+                        throw new Error("Tipo di ritorno funzione '" + callProcOp.getId() + "' " + returnType + " ma tipo " +
+                                "id '" + entry.getKey() + "' " + type.lookup(entry.getKey()).getType());
+                    }
+                }
+            }
+        }
         return null;
     }
 
     @Override
     public Object visit(VarDeclListOp varDeclList) {
+         for (VarDeclOp varDeclOp : varDeclList.getList()) {
+            varDeclOp.accept(this);
+        }
         return null;
     }
 
