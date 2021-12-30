@@ -1386,7 +1386,7 @@ class CUP$Parser$actions {
 		int valueleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valueright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String value = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(value);
+		RESULT = new ExprOp(Boolean.getBoolean(value));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Expr",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1398,7 +1398,7 @@ class CUP$Parser$actions {
 		int valueleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valueright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String value = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(value);
+		RESULT = new ExprOp(Boolean.getBoolean(value));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Expr",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1410,7 +1410,7 @@ class CUP$Parser$actions {
 		int intConstleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int intConstright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String intConst = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(intConst);
+		RESULT = new ExprOp(Integer.parseInt(intConst));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Expr",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1422,7 +1422,7 @@ class CUP$Parser$actions {
 		int realConstleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int realConstright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String realConst = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(realConst);
+		RESULT = new ExprOp(Float.parseFloat(realConst));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Expr",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

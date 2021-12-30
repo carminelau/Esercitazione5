@@ -16,7 +16,7 @@ public class ExprOp {
     public ExprOp(Statement statement) {
         this.statement = statement;
     }
-    public ExprOp(Integer anIntConst) {
+    public ExprOp(int anIntConst) {
         this.var  = anIntConst;
     }
 
@@ -58,8 +58,9 @@ public class ExprOp {
             String type = var.getClass().toString();
             for (String s : type.split(regex)) {
                 type = s;
-            }
-            if (!type.equals("Id") && !type.equals("Null")) {
+            }if (type.equals("Float")){
+                type = "real_const";
+            } else if (!type.equals("Id") && !type.equals("Null")) {
                 type += "_const";
             }
             return type;

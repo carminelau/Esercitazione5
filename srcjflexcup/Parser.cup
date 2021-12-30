@@ -357,10 +357,10 @@ ExprList ::= Expr:e1
         | NOT Expr
         | LPAR Expr RPAR*/
 
-Expr ::= TRUE:value {:RESULT = new ExprOp(value);:}
-        |FALSE:value {:RESULT = new ExprOp(value);:}
-        |INTEGER_CONST:intConst {:RESULT = new ExprOp(intConst);:}
-        |REAL_CONST:realConst {:RESULT = new ExprOp(realConst);:}
+Expr ::= TRUE:value {:RESULT = new ExprOp(Boolean.getBoolean(value));:}
+        |FALSE:value {:RESULT = new ExprOp(Boolean.getBoolean(value));:}
+        |INTEGER_CONST:intConst {:RESULT = new ExprOp(Integer.parseInt(intConst));:}
+        |REAL_CONST:realConst {:RESULT = new ExprOp(Float.parseFloat(realConst));:}
         |STRING_CONST:string {:RESULT = new ExprOp(string);:}
         |ID:id  {:RESULT = new ExprOp(new Id(id));:}
         |Expr:e1 PLUS Expr:e2 {:RESULT = new ExprOp(new AddOp(e1,e2));:}

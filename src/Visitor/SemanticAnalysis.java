@@ -57,14 +57,14 @@ public class SemanticAnalysis implements Visitor{
 
     public String arithmeticCheckType(ExprOp e) {
         //Se la variabile è un boolean oppure una stringa è un errore
-        if (e.getVar() instanceof Boolean || e.getVar() instanceof String) {
-            throw new Error("Type missmatch ");
+        if (e.getVar() instanceof Boolean ) {
+            throw new Error("Type missmatch1 ");
         }
         //Se è un id controllo nella tabella dei simboli il tipo
         if (e.getVar() instanceof Id id) {
             Record record = type.lookup(id.toString());
             if (record.getType().equals("string") || record.getType().equals("bool")) {
-                throw new Error("Type missmatch ");
+                throw new Error("Type missmatch2 ");
             } else {
                 return record.getType();
             }
@@ -101,19 +101,19 @@ public class SemanticAnalysis implements Visitor{
     public void booleanCheckType(ExprOp e) {
 
         if (e.getVar() instanceof Integer || e.getVar() instanceof String || e.getVar() instanceof Float) {
-            throw new Error("Type missmatch ");
+            throw new Error("Type missmatch3 ");
         }
         if (e.getVar() instanceof Id id) {
             Record record = type.lookup(id.toString());
             if (record.getType().equals("string") || record.getType().equals("integer") || record.getType().equals("real")) {
-                throw new Error("Type missmatch ");
+                throw new Error("Type missmatch4 ");
             }
         }
     }
 
     public void booleanCheckType(String e1Type) {
         if (e1Type.equals("integer") || e1Type.equals("string") || e1Type.equals("real")) {
-            throw new Error("Type missmatch ");
+            throw new Error("Type missmatch5 ");
         }
 
     }
@@ -139,21 +139,34 @@ public class SemanticAnalysis implements Visitor{
         } else
             e2Type = op.getE2().getOperation().getOpType();
 
+        boolean b = (e1Type.equals("integer") || e1Type.equals("real")) && (e2Type.equals("integer") || e2Type.equals("real"));
         if (op instanceof EqOp || op instanceof NeOp || op instanceof LtOp || op instanceof LeOp || op instanceof GtOp || op instanceof GeOp) {
             //op.setType(relationalCheckType(e1Type,e2Type));
 
             if (!e1Type.equals(e2Type)) {
-                if ((e1Type.equals("integer") || e1Type.equals("real")) && (e2Type.equals("integer") || e2Type.equals("real"))) {
+                if (b) {
                     op.setType("bool");
                     return;
                 } else {
-                    throw new Error(("Type mismatch"));
+                    throw new Error(("Type mismatch1"));
                 }
             }
             op.setType("bool");
 
-        } else
+        } else if (op instanceof StrConcatOp){
+            if (!e1Type.equals(e2Type)) {
+                if ((e1Type.equals("integer") || e1Type.equals("real") || e1Type.equals("string")) && (e2Type.equals("integer") || e2Type.equals("real") || e1Type.equals("string"))) {
+                    op.setType("string");
+                }
+                else {
+                    throw new Error(("Type mismatch2"));
+                }
+            } else {
+                op.setType("string");
+            }
+        }else {
             op.setType(arithmeticCheckType(e1Type, e2Type));
+        }
     }
 
     public String getType(ExprOp e) {
@@ -190,7 +203,20 @@ public class SemanticAnalysis implements Visitor{
 
         programOp.getVarDeclOpList().accept(this);//popola la tabella dei simboli con le variabili
         programOp.getProcOpList().accept(this);
-        programOp.getMain().accept(this);
+        if(programOp.getMain() != null) {
+            programOp.getMain().accept(this);
+            Record r = new Record();
+            r.setSym("main");
+            r.setKind("method");
+
+            type.addId(r);
+
+        } else {
+            //controllo se è stato implementato il metodo main altrimenti è un errore
+            if (type.lookup("main") == null) {
+                throw new Error("Deve esserci la funzione main");
+            }
+        }
 
         type.exitScope();
         return programOp;
@@ -201,10 +227,7 @@ public class SemanticAnalysis implements Visitor{
         for (ProcOp procOp : procListOp.getList()) {
             procOp.accept(this);
         }
-        //controllo se è stato implementato il metodo main altrimenti è un errore
-        if (type.lookup("main") == null) {
-            throw new Error("Deve esserci la funzione main");
-        }
+
         return null;
     }
 
@@ -212,7 +235,6 @@ public class SemanticAnalysis implements Visitor{
     public Object visit(ParamDeclListOp paramDeclListOp) {
         for (ParDeclOp parDeclOp : paramDeclListOp.getList()) {
             parDeclOp.accept(this);
-
         }
         return null;
     }
@@ -258,11 +280,13 @@ public class SemanticAnalysis implements Visitor{
             */
             if (e.getOperation() != null) {
                 Record r = type.lookup(idn);
-                if (e.getOperation().getOpType().equals("integer") && r.getType().equals("real")) {
-                    //compatibile
-                } else if (!e.getOperation().getOpType().equals(r.getType())) {
-                    throw new Error("Tipo " + assignStatOp.getId().toString() + " " +
-                            r.getType() + " ma tipo espressione " + e.getOperation().getOpType());
+                if (e.getOperation().getOpType()!= null) {
+                    if (e.getOperation().getOpType().equals("integer") && r.getType().equals("real")) {
+                        //compatibile
+                    } else if (!e.getOperation().getOpType().equals(r.getType())) {
+                        throw new Error("Tipo " + assignStatOp.getId().toString() + " " +
+                                r.getType() + " ma tipo espressione " + e.getOperation().getOpType());
+                    }
                 }
             } else if (e.getVar() != null) {
                 //caso in cui ho a,b,c := func(),var;
@@ -314,21 +338,22 @@ public class SemanticAnalysis implements Visitor{
                         fun() int,int,int
                         c := fun(). ERRORE
                      */
-                if (returnTypes.size() > 1) {
-                    throw new Error("Errore sul numero di valori dell'assegnazione");
-                } else {
-                    checkTypeProc(e);
-                }
+                if(returnTypes != null) {
+                    if (returnTypes.size() > 1) {
+                        throw new Error("Errore sul numero di valori dell'assegnazione");
+                    } else {
+                        checkTypeProc(e);
+                    }
 
-                if (returnTypes.get(0).equals("integer") &&
-                        type.lookup(idName2).getType().equals("real")) {
-                    //Va bene
-                } else if (!returnTypes.get(0).equals(type.lookup(idName2).getType())) {
-                    throw new Error("Tipo id " + type.lookup(idName2).getSym() + " " +
-                            type.lookup(idName2).getType() +
-                            " ma tipo ritorno funzione '" + callProcOp.getId() + "': " + returnTypes.get(0));
+                    if (returnTypes.get(0).equals("integer") &&
+                            type.lookup(idName2).getType().equals("real")) {
+                        //Va bene
+                    } else if (!returnTypes.get(0).equals(type.lookup(idName2).getType())) {
+                        throw new Error("Tipo id " + type.lookup(idName2).getSym() + " " +
+                                type.lookup(idName2).getType() +
+                                " ma tipo ritorno funzione '" + callProcOp.getId() + "': " + returnTypes.get(0));
+                    }
                 }
-
             }
         return null;
     }
@@ -553,8 +578,8 @@ public class SemanticAnalysis implements Visitor{
             parDeclOp.accept(this);
 
             String id = parDeclOp.getId().toString();
-                Record record = type.lookup(id);
-                record.setType(parDeclOp.getT().getTipo());
+            Record record = type.lookup(id);
+            record.setType(parDeclOp.getT().getTipo());
         }
         return null;
     }
@@ -585,15 +610,23 @@ public class SemanticAnalysis implements Visitor{
 
         //inserisco nella tabella figlia della funzione le variabili locali alla funzione e i parametri
         type.enterScope(procOp.getTable());//crea una nuova tabella figlia
-        procOp.getList().accept(this);
+        for(ParDeclOp params : procOp.getList().getList()){
+            if (type.lookup(params.getId().toString()) == null) {
+                Record r1= new Record(params.getId().toString(),"var",params.getT().getTipo());
+                type.addId(r1);
+            }
+        }
+
         procOp.getVars().accept(this);
 
         //infine devo controllare il tipo di ritorno
         ArrayList<String> resultTyes = type.cercaMetodo(procOp.getId().toString()).getReturnType();
-        //Se c'è una variabile con lo stesso nome del metodo?
-        if (resultTyes.contains("void") && resultTyes.size() > 1) {
-            //una funzione non può restituire ad es. void,int
-            throw new Error("La funzione " + procOp.getId() + " non può ritornare " + resultTyes);
+        if (resultTyes != null) {
+            //Se c'è una variabile con lo stesso nome del metodo?
+            if (resultTyes.size() > 1) {
+                //una funzione non può restituire ad es. void,int
+                throw new Error("La funzione " + procOp.getId() + " non può ritornare " + resultTyes);
+            }
         }
         //continuo la visita controllando gli statment interni alla funzione
         if (procOp.getStats() != null)
@@ -625,7 +658,7 @@ public class SemanticAnalysis implements Visitor{
                 } else if (entry.getValue().getOperation().getOpType() != null && entry.getValue().getOperation().getOpType().equals(r.getType())) {
                     //System.out.println(entry.getKey() + " --> " + entry.getValue().getOperation().getOpType());
                 } else {
-                    throw new Error("Type missmatch");
+                    throw new Error("Type missmatch6");
                 }
             } else if (entry.getValue().getVar() != null) {
                 if (entry.getValue().getVar() instanceof Id id) {
@@ -636,21 +669,21 @@ public class SemanticAnalysis implements Visitor{
                     } else if (type.lookup(id.toString()).getType().equals("integer") && r.getType().equals("real")) {
                         System.out.println("no");
                     } else {
-                        throw new Error("Type missmatch ");
+                        throw new Error("Type missmatch7 ");
                     }
                 } else if (r.getType().equals("integer") && entry.getValue().getType().toLowerCase().contains("integer")) {
                     //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
                     //Compatibile
-                } else if (r.getType().equals("real") && (entry.getValue().getType().toLowerCase().contains("real") ||
-                        entry.getValue().getType().toLowerCase().contains("integer"))) {
+                } else if (r.getType().equals("real") && (entry.getValue().getType().toLowerCase().contains("real") || entry.getValue().getType().toLowerCase().contains("integer"))) {
                     //Compatibile
                     //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
-                } else if (entry.getValue().getType().toLowerCase().contains(r.getType()) ||
-                        entry.getValue().getType().equals("Null")) {
+                } else if (entry.getValue().getType().toLowerCase().contains(r.getType()) || entry.getValue().getType().equals("Null")) {
                     //Compatibile
                     //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
-                } else {
-                    throw new Error("Type missmatch ");
+                } else if (r.getType().equals("var") && entry.getValue().getType().toLowerCase().contains("var")) {
+                    //Compatibile
+                }else {
+                    throw new Error("Type missmatch8 ");
                 }
             } else if (entry.getValue().getStatement() != null) {
                 //caso in cui assegno ad un'inizializzazione il valore di ritorno di una funzione---> int a:=func();
