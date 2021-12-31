@@ -56,6 +56,7 @@ public class ExprOp {
         if(var != null) {
             String regex = "(\\.)";
             String type = var.getClass().toString();
+            //System.out.println(var + " -> " + type);
             for (String s : type.split(regex)) {
                 type = s;
             }if (type.equals("Float")){

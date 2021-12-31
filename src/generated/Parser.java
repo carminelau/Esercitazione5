@@ -638,13 +638,10 @@ class CUP$Parser$actions {
           case 8: // VarDecl ::= VAR IdListInitObbl SEMI 
             {
               VarDeclOp RESULT =null;
-		int varleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
-		int varright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		String var = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int listleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int listright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		IdListInitOp list = (IdListInitOp)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
-		 RESULT = new VarDeclOp(new TypeOp(var),list);
+		 RESULT = new VarDeclOp(new TypeOp("var"),list);
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VarDecl",4, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -813,7 +810,7 @@ class CUP$Parser$actions {
 		int intConstleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int intConstright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String intConst = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(intConst);
+		RESULT = new ExprOp(Integer.parseInt(intConst));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Const",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -825,7 +822,7 @@ class CUP$Parser$actions {
 		int realConstleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int realConstright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String realConst = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(realConst);
+		RESULT = new ExprOp(Float.parseFloat(realConst));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Const",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -849,7 +846,7 @@ class CUP$Parser$actions {
 		int valueleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valueright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String value = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(value);
+		RESULT = new ExprOp(Boolean.getBoolean(value));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Const",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -861,7 +858,7 @@ class CUP$Parser$actions {
 		int valueleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valueright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		String value = (String)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = new ExprOp(value);
+		RESULT = new ExprOp(Boolean.getBoolean(value));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("Const",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

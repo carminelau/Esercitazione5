@@ -6,7 +6,7 @@
 
 #
 
-integer c := 1;
+var c := 1;
 
 
 # fa somma e restituisce il risultato
@@ -67,9 +67,9 @@ end fun;
 # stampa il messaggio dopo 4 ritorni a capo
 fun stampa(string messaggio)
 
-	integer i := 1;
+	var i := 1;
 	while i <= 4 loop
-		integer incremento := 1;
+		var incremento := 1;
 		?. '';
 		i := i + incremento;
 	end loop;
@@ -80,9 +80,9 @@ end fun;
 
 #programma main
 main
-	integer a := 0, b := 0;
-	string ans := 'si';
-	integer op := 0;
+	var a := 0, b := 0;
+	var ans := 'si';
+	var op := 0;
 	real risultato := 0;
 
     while ans = 'si' loop
@@ -94,30 +94,30 @@ main
         % b;
         if op = 1 then
             risultato := sommac(a,b);
-            stampa('la somma di ' & a & ' e ' & b & ' è ' & risultato);
+            stampa('la somma di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
         if op = 2 then
             risultato := differenzac(a,b);
-            stampa('la differenza di ' & a & ' e ' & b & ' è ' & risultato);
+            stampa('la differenza di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
         if op = 3 then
             risultato := moltiplicazionec(a,b);
-            stampa('la moltiplicazione di ' & a & ' e ' & b & ' è ' & risultato);
+            stampa('la moltiplicazione di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
         if op = 4 then
             risultato := divisionec(a,b);
-            stampa('la divisione di ' & a & ' e ' & b & ' è ' & risultato);
+            stampa('la divisione di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
         if op = 5 then
             risultato := potenzac(a,b);
-            stampa('la potenza di ' & a & ' elevato a ' & b & ' è ' & risultato);
+            stampa('la potenza di ' & a & ' elevato a ' & b &  ' è ' & risultato);
         end if;
 
         ?: 'Vuoi continuare ? si/no';
         %ans;
 
 	end loop;
-	
+
 	?. '';
 	? 'ciao';
 

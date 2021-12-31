@@ -9,6 +9,7 @@ public class ParDeclOp {
     private String out;
     private TypeOp t;
     private Id id;
+
     public ParDeclOp(TypeOp t, Id id) {
         this.id = id;
         this.t = t;

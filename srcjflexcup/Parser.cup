@@ -132,12 +132,8 @@ precedence left LPAR, RPAR;
 /*VarDecl ::= Type IdListInit SEMI
     | VAR IdListInitObbl SEMI*/
 
-//    VarDecl ::= Type:t IdListInit:list SEMI {:RESULT = new VarDeclOp(t,list);:}
-//            | VAR IdListInitObbl:list SEMI {:RESULT = new VarDeclOp("var",list);:};
-
-
     VarDecl ::= Type:t IdListInit:list SEMI {:RESULT = new VarDeclOp(t, list);:}
-            | VAR:var IdListInitObbl:list SEMI {: RESULT = new VarDeclOp(new TypeOp(var),list);:};
+            | VAR IdListInitObbl:list SEMI {: RESULT = new VarDeclOp(new TypeOp("var"),list);:};
 
 //Type ::= INTEGER | REAL | STRING | BOOL
 
@@ -185,11 +181,11 @@ precedence left LPAR, RPAR;
             ;
 
 //Const ::= INTEGER_CONST | REAL_CONST | STRING_CONST | TRUE | FALSE
-    Const ::= INTEGER_CONST:intConst {:RESULT = new ExprOp(intConst);:}
-                | REAL_CONST:realConst {:RESULT = new ExprOp(realConst);:}
+    Const ::= INTEGER_CONST:intConst {:RESULT = new ExprOp(Integer.parseInt(intConst));:}
+                | REAL_CONST:realConst {:RESULT = new ExprOp(Float.parseFloat(realConst));:}
                 | STRING_CONST:stringConst {:RESULT = new ExprOp(stringConst);:}
-                | TRUE:value {:RESULT = new ExprOp(value);:}
-                | FALSE:value {:RESULT = new ExprOp(value);:};
+                | TRUE:value {:RESULT = new ExprOp(Boolean.getBoolean(value));:}
+                | FALSE:value {:RESULT = new ExprOp(Boolean.getBoolean(value));:};
 
 /*Fun ::= FUN ID LPAR ParamDeclList RPAR COLON Type
             VarDeclList StatList END FUN SEMI

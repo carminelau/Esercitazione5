@@ -646,7 +646,20 @@ public class SemanticAnalysis implements Visitor{
         for (Map.Entry<String, ExprOp> entry : varDecl.getList().getList().entrySet()) {
 
             r = type.lookup(entry.getKey());
-            r.setType(tipo);
+            if (tipo.equals("var")) {
+                if (entry.getValue().getType().toLowerCase().contains("integer")) {
+                    r.setType("integer");
+                } else if (entry.getValue().getType().toLowerCase().contains("real")) {
+                    r.setType("real");
+                } else if (entry.getValue().getType().toLowerCase().contains("bool")) {
+                    r.setType("bool");
+                } else if (entry.getValue().getType().toLowerCase().contains("string")) {
+                    r.setType("string");
+                }
+            } else {
+                r.setType(tipo);
+            }
+
             //controllo che il tipo della dichairazione corrisponda all'assegnazione int a := 5 --> ok, int a := false --> Error
 
             if (entry.getValue().getOperation() != null) {
@@ -680,9 +693,17 @@ public class SemanticAnalysis implements Visitor{
                 } else if (entry.getValue().getType().toLowerCase().contains(r.getType()) || entry.getValue().getType().equals("Null")) {
                     //Compatibile
                     //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
-                } else if (r.getType().equals("var") && entry.getValue().getType().toLowerCase().contains("var")) {
+                } else if (r.getType().equals("var")) {
+                    if(entry.getValue().getType().toLowerCase().contains("integer")){
+                        r.setType("integer");
+                    } else if (entry.getValue().getType().toLowerCase().contains("real")){
+                        r.setType("real");
+                    } else if (entry.getValue().getType().toLowerCase().contains("bool")){
+                        r.setType("bool");
+                    }
                     //Compatibile
                 }else {
+
                     throw new Error("Type missmatch8 ");
                 }
             } else if (entry.getValue().getStatement() != null) {

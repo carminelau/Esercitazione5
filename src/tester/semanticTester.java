@@ -35,5 +35,6 @@ public class semanticTester {
         //Analisi semantica
         SemanticAnalysis sem = new SemanticAnalysis();
         prog.accept(sem);
+
     }
 }
