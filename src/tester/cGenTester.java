@@ -5,7 +5,7 @@ import Visitor.CcodeGen;
 import Visitor.SemanticAnalysis;
 import Visitor.XmlGenerator;
 import generated.Lexer;
-import java_cup.parser;
+import generated.Parser;
 import org.w3c.dom.Document;
 
 import java.io.*;
@@ -21,11 +21,12 @@ public class cGenTester {
     public static void main(String[] args) throws Exception {
         FileReader inFile = new FileReader(args[0]);
         Lexer lexer = new Lexer(inFile);
-        parser p = new parser(lexer);
+        Parser p = new Parser(lexer);
         //System.out.println(p.debug_parse().parse_state);
         ProgramOp prog = (ProgramOp) p.parse().value;
 
-        //Albero Sintattico
+
+        //Albero Sintattico"
         XmlGenerator xml = new XmlGenerator();
         Document doc = (Document) prog.accept(xml);
 
