@@ -28,6 +28,7 @@ public class ProcOp {
         this.list = paramList;
         this.vars = vars;
         this.stats = stats;
+        this.t = null;
     }
 
 

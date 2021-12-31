@@ -6,6 +6,10 @@ import Visitor.XmlGenerator;
 import org.w3c.dom.Node;
 
 public class ParDeclOp {
+    public String getOut() {
+        return out;
+    }
+
     private String out;
     private TypeOp t;
     private Id id;
