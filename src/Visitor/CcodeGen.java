@@ -6,6 +6,7 @@ import Scope.Record;
 import Statement.*;
 import Scope.*;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -907,26 +908,80 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(WriteStatOp writeStatOp) {
+        writeStatOp.getExprList().accept(this);
         return null;
     }
 
     @Override
     public Object visit(WhileStatOp whileStatOp) {
+        if (whileStatOp.getStatListOp() != null && whileStatOp.getStatListOp() == null) {
+            codeBuffer.append("while(");
+            whileStatOp.getE().accept(this);
+            codeBuffer.append("){\n");
+            whileStatOp.getStatListOp().accept(this);
+            codeBuffer.append("}\n");
+        } else if (whileStatOp.getStatListOp() != null && whileStatOp.getStatListOp() != null) {
+            codeBuffer.append("while(");
+            whileStatOp.getE().accept(this);
+            codeBuffer.append("){\n");
+            whileStatOp.getStatListOp().accept(this);
+            whileStatOp.getStatListOp().accept(this);
+            codeBuffer.append("}\n");
+            whileStatOp.getStatListOp().accept(this);
+        }
+
         return null;
     }
 
     @Override
     public Object visit(StatOp statOp) {
+        if (statOp.getStatement() instanceof AssignStatOp assignStat) {
+            assignStat.accept(this);
+        } else if (statOp.getStatement() instanceof IfStatOp ifStat) {
+            ifStat.accept(this);
+        } else if (statOp.getStatement() instanceof WhileStatOp whileStat) {
+            whileStat.accept(this);
+        } else if (statOp.getStatement() instanceof ReadStatOp readlnStat) {
+            readlnStat.accept(this);
+        } else if (statOp.getStatement() instanceof WriteStatOp writeStat) {//writeOp
+            writeStat.accept(this);
+        } else if (statOp.getStatement() instanceof CallProcOp callProcOp) {//callProc
+            callProcOp.accept(this);
+        }
         return null;
     }
 
     @Override
-    public Object visit(ReadStatOp readlnStatOp) {
-        return null;
-    }
+    public Object visit(ReadStatOp readlnStatOp) {return null;}
 
     @Override
     public Object visit(IfStatOp ifStatOp) {
+        codeBuffer.append("if(");
+        if (ifStatOp.getE().getOperation() != null) {
+            idx = codeBuffer.length();
+            ifStatOp.getE().getOperation().accept(this);
+            codeBuffer.append("){\n");
+        } else if (ifStatOp.getE().getVar() != null && ifStatOp.getE().getVar() instanceof Id id) {
+            codeBuffer.append(id);
+            codeBuffer.append("){\n");
+        } else if (ifStatOp.getE().getStatement() != null && ifStatOp.getE().getStatement() instanceof CallProcOp c) {
+            idx = codeBuffer.lastIndexOf("\n");
+            codeBuffer.insert(idx, "\n");
+            idx++;
+            c.accept(this);
+            codeBuffer.deleteCharAt(codeBuffer.length() - 1);
+            codeBuffer.deleteCharAt(codeBuffer.length() - 1);
+            codeBuffer.append("){\n");
+        } else {
+            codeBuffer.append(ifStatOp.getE().getVar());
+            codeBuffer.append("){\n");
+        }
+        ifStatOp.getStatList().accept(this);
+        codeBuffer.append("}\n");
+
+        if (ifStatOp.getElseStat() != null) {
+            ifStatOp.getElseStat().accept(this);
+        }
         return null;
     }
 }
