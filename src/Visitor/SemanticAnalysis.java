@@ -742,8 +742,8 @@ public class SemanticAnalysis implements Visitor{
 
     @Override
     public Object visit(WriteStatOp writeStatOp) {
-        if (writeStatOp.getExprList() != null) {
-            writeStatOp.getExprList().accept(this);
+        if (writeStatOp.getExpr() != null) {
+            writeStatOp.getExpr().accept(this);
         }
         return null;
     }

@@ -22,7 +22,7 @@ public class WriteStatOp extends Statement{
                 '}';
     }
 
-    public ExprOp getExprList() {
+    public ExprOp getExpr() {
         return expr;
     }
 

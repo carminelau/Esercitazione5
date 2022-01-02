@@ -6,7 +6,6 @@ import Scope.Record;
 import Statement.*;
 import Scope.*;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -167,11 +166,46 @@ public class CcodeGen implements Visitor {
         idx += 2;
     }
 
+    public void getStrcat(String s1, String s2) {
+
+        codeBuffer.insert(idx, "strcat(");
+        idx += 7;
+        codeBuffer.insert(idx, s1);
+        idx += s1.length();
+        codeBuffer.insert(idx, ",\"");
+        idx += 2;
+        codeBuffer.insert(idx, s2);
+        idx += s2.length();
+        codeBuffer.insert(idx, "\")");
+        idx += 2;
+    }
+
+    public void getPow(ExprOp e1, ExprOp e2) {
+
+        if (e1.getVar() instanceof Id id1 && e2.getVar() instanceof Id id2) {
+            String typeId1 = typeEnvirornment.lookup(id1.toString()).getType();
+            String typeId2 = typeEnvirornment.lookup(id2.toString()).getType();
+
+            if (typeId1.equalsIgnoreCase("integer") || typeId1.equalsIgnoreCase("real") ||typeId2.equalsIgnoreCase("integer") || typeId2.equalsIgnoreCase("real") ) {
+                codeBuffer.insert(idx, "pow(");
+                idx += 4;
+                codeBuffer.insert(idx, e1.getVar());
+                idx += e1.getVar().toString().length();
+                codeBuffer.insert(idx, ",");
+                idx += 1;
+                codeBuffer.insert(idx, e2.getVar());
+                idx += e2.getVar().toString().length();
+                codeBuffer.insert(idx, ")");
+                idx += 1;
+            }
+        }
+    }
+
     private String getConv(String id) {
         String type = typeEnvirornment.lookup(id).getType();
         return switch (type) {
             case "integer", "boolean" -> "%d";
-            case "float" -> "%f";
+            case "real" -> "%f";
             case "string" -> "%s";
             default -> "";
         };
@@ -180,7 +214,7 @@ public class CcodeGen implements Visitor {
     private String getConvOp(String type) {
         return switch (type) {
             case "integer", "boolean" -> "%d";
-            case "float" -> "%f";
+            case "real" -> "%f";
             case "string" -> "%s";
             default -> "";
         };
@@ -228,6 +262,7 @@ public class CcodeGen implements Visitor {
         }
         programOp.getVarDeclOpList().accept(this);
         programOp.getProcOpList().accept(this);
+        programOp.getMain().accept(this);
         System.out.println(codeBuffer);
         typeEnvirornment.exitScope();
         return null;
@@ -273,6 +308,16 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(IdListOp idListOp) {
+        int i = 1;
+        ArrayList<String> ids = idListOp.getIdList();
+        for(String id : ids){
+            if(i < ids.size()) {
+                codeBuffer.append(id).append(",");
+                i++;
+            }else{
+                codeBuffer.append(id).append("){\n");
+            }
+        }
         return null;
     }
 
@@ -282,9 +327,11 @@ public class CcodeGen implements Visitor {
         boolean multiCall = false;
         ExprOp exprOp = assignStatOp.getExpr();
         if (exprOp.getStatement() != null && exprOp.getStatement() instanceof CallProcOp callProcOp) {
-            if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1) {
-                codeBuffer.append(callProcOp.getId()).append("_s new_").append(callProcCount).append(" = ")
-                        .append(callProcOp.getId());
+            if(typeEnvirornment.lookup(callProcOp.getId()).getReturnType()!= null) {
+                if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1) {
+                    codeBuffer.append(callProcOp.getId()).append(" = ");
+                    exprOp.accept(this);
+                }
             }
             codeBuffer.append("(");
             if (callProcOp.getExprList() != null) {
@@ -350,21 +397,23 @@ public class CcodeGen implements Visitor {
             } else {
                 codeBuffer.append(");\n");
             }
-            for (String ignored : typeEnvirornment.lookup(callProcOp.getId()).getReturnType()) {
-                if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1) {
-                    int newCallcount;
-                    if(multiCall) {
-                        newCallcount = callProcCount - 1;
-                    }else{
-                        newCallcount = callProcCount;
+            if(typeEnvirornment.lookup(callProcOp.getId()).getReturnType()!= null) {
+                for (String ignored : typeEnvirornment.lookup(callProcOp.getId()).getReturnType()) {
+                    if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1) {
+                        int newCallcount;
+                        if (multiCall) {
+                            newCallcount = callProcCount - 1;
+                        } else {
+                            newCallcount = callProcCount;
+                        }
+                        codeBuffer.append(assignStatOp.getId()).append(" = ")
+                                .append("new_").append(newCallcount).append(".var_").append(returnCount).append(";\n");
                     }
-                    codeBuffer.append(assignStatOp.getId()).append(" = ")
-                            .append("new_").append(newCallcount).append(".var_").append(returnCount).append(";\n");
+                    returnCount++;
                 }
-                returnCount++;
+                if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1)
+                    callProcCount++;
             }
-            if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1)
-                callProcCount++;
         } else if (exprOp.getVar() instanceof Id id) {
             codeBuffer.append(assignStatOp.getId()).append(" = ").append(id).append(";\n");
         } else if (exprOp.getOperation() != null) {
@@ -450,8 +499,13 @@ public class CcodeGen implements Visitor {
     @Override
     public Object visit(MainOp main) {
         typeEnvirornment.enterScope(main.getGlobalTable());
+        codeBuffer.append("int");
+        codeBuffer.append(" main( ");
+
+        codeBuffer.append(" ){\n");
         main.getVarDeclOpList().accept(this);
         main.getStats().accept(this);
+        codeBuffer.append("return 0;\n}");
         return null;
     }
 
@@ -498,6 +552,15 @@ public class CcodeGen implements Visitor {
             codeBuffer.insert(idx, "/");
             idx++;
             e2.accept(this);
+        } else if (operation instanceof DivIntOp) {
+            if (e1.getVar() instanceof Integer && e2.getVar() instanceof Integer) {
+                e1.accept(this);
+                codeBuffer.insert(idx, "/");
+                idx++;
+                e2.accept(this);
+            }
+        } else if (operation instanceof PowOp) {
+            getPow(e1,e2);
         } else if (operation instanceof AndOp) {
             e1.accept(this);
             codeBuffer.insert(idx, "&&");
@@ -741,6 +804,18 @@ public class CcodeGen implements Visitor {
             codeBuffer.insert(idx, "!");
             idx++;
             e1.accept(this);
+        } else if (operation instanceof StrConcatOp) {
+
+            if (e1.getVar() instanceof String s1 && e2.getVar() instanceof String s2) {
+                /*
+                    if Return value < 0 then it indicates str1 is less than str2.
+                    if Return value > 0 then it indicates str2 is less than str1.
+                    if Return value = 0 then it indicates str1 is equal to str2.
+
+                    int strcmp(const char *str1, const char *str2)
+                */
+                getStrcat(s1,s2);
+            }
         }
         return null;
     }
@@ -748,7 +823,7 @@ public class CcodeGen implements Visitor {
     @Override
     public Object visit(ExprOp exprOp) {
         if (exprOp.getVar() != null) {
-            codeBuffer.insert(idx, exprOp.getVar());
+            codeBuffer.append(exprOp.getVar().toString());
             if (exprOp.getVar() instanceof Id id) {
                 idx += id.toString().length();
             } else {
@@ -784,44 +859,46 @@ public class CcodeGen implements Visitor {
 
         for (Map.Entry<String, ExprOp> entry : idListInitOp.getList().entrySet()) {
             String var = entry.getKey();
+            System.out.println(var + "Record: " + typeEnvirornment.lookup(var));
+            if (typeEnvirornment.lookup(var) != null) {
+                String type = typeEnvirornment.lookup(var).getType();
+                ExprOp value = entry.getValue();
+                if (value.getVar() != null) {
+                    if (type.equals("string") && value.getVar() instanceof String) {
+                        codeBuffer.append(var);
+                        codeBuffer.append(" = \"").append(value.getVar()).append("\";\n");
+                    } else if (value.getVar() == null) {//caso in cui ho int v1,v = 5+5;
+                        if (idListInitOp.getList().size() == 1) {
+                            codeBuffer.append(var).append(";\n");
+                        } else if (i < idListInitOp.getList().size()) {
+                            codeBuffer.append(var).append(",");
+                            i++;
+                        } else {
+                            codeBuffer.append(var).append(";\n");
 
-            String type = typeEnvirornment.lookup(var).getType();
-            ExprOp value = entry.getValue();
-            if (value.getVar() != null) {
-                if (type.equals("string") && value.getVar() instanceof String) {
-                    codeBuffer.append(var);
-                    codeBuffer.append(" = \"").append(value.getVar()).append("\";\n");
-                } else if (value.getVar() == null) {//caso in cui ho int v1,v = 5+5;
-                    if (idListInitOp.getList().size() == 1) {
-                        codeBuffer.append(var).append(";\n");
-                    } else if (i < idListInitOp.getList().size()) {
-                        codeBuffer.append(var).append(",");
-                        i++;
-                    } else {
-                        codeBuffer.append(var).append(";\n");
-
+                        }
+                    } else {//caso int v = 5;
+                        if (idListInitOp.getList().size() == 1) {
+                            codeBuffer.append(var);
+                            codeBuffer.append(" = ").append(value.getVar()).append(";\n");
+                        } else if (i < idListInitOp.getList().size()) {
+                            codeBuffer.append(var);
+                            codeBuffer.append(" = ").append(value.getVar()).append(", ");
+                            i++;
+                        } else {
+                            codeBuffer.append(var);
+                            codeBuffer.append(" = ").append(value.getVar()).append(";\n");
+                        }
                     }
-                } else {//caso int v = 5;
-                    if (idListInitOp.getList().size() == 1) {
-                        codeBuffer.append(var);
-                        codeBuffer.append(" = ").append(value.getVar()).append(";\n");
-                    } else if (i < idListInitOp.getList().size()) {
-                        codeBuffer.append(var);
-                        codeBuffer.append(" = ").append(value.getVar()).append(", ");
-                        i++;
-                    }else{
-                        codeBuffer.append(var);
-                        codeBuffer.append(" = ").append(value.getVar()).append(";\n");
-                    }
+                } else if (value.getOperation() != null) {
+                    codeBuffer.append(var).append(" = ");
+                    idx = codeBuffer.length();
+                    value.getOperation().accept(this);
+                    codeBuffer.append(";\n");
+                } else if (value.getStatement() != null && value.getStatement() instanceof CallProcOp c) {
+                    codeBuffer.append(var).append(" = ");
+                    c.accept(this);
                 }
-            } else if (value.getOperation() != null) {
-                codeBuffer.append(var).append(" = ");
-                idx = codeBuffer.length();
-                value.getOperation().accept(this);
-                codeBuffer.append(";\n");
-            } else if (value.getStatement() != null && value.getStatement() instanceof CallProcOp c) {
-                codeBuffer.append(var).append(" = ");
-                c.accept(this);
             }
         }
         return null;
@@ -874,57 +951,8 @@ public class CcodeGen implements Visitor {
         if (procOp.getStats() != null)
             procOp.getStats().accept(this);
 
-        //RETURN
-        ArrayList<ParDeclOp> output = new ArrayList<>();
-        for (ParDeclOp p: procOp.getList().getList()) {
+        codeBuffer.append("}\n");
 
-            if (p.getOut() != null) {
-                output.add(p);
-            }
-        }
-        if (procOp.getId().toString().equals("main")) {
-            codeBuffer.append("return 0;\n}");
-        } else if (procOp.getList().getList() != null) {
-
-            int i = 0;
-            if (procOp.getList().getList().size() > 1) {
-
-                codeBuffer.append(procOp.getId()).append("_s new;\n");
-                for (ParDeclOp e : output) {
-                    if (e.getId() != null) {
-                        String id = e.getId().toString();
-                        if (i < output.size()) {
-                            codeBuffer.append("new.var_").append(i).append(" = ").append(id).append(";\n");
-                            i++;
-                        } else {
-                            codeBuffer.append("\n");
-                        }
-                    } else {
-                        //se è una costante
-                        if (e.getT().getTipo().equals("string")) {
-                            codeBuffer.append("new.var_").append(i).append(" = \"").append(e.getId().toString()).append("\";\n");
-                        } else {
-                            codeBuffer.append("new.var_").append(i).append(" = ").append(e.getId().toString()).append(";\n");
-                        }
-
-                        i++;
-
-                    }
-                }
-                codeBuffer.append("return new;\n}\n");
-            } else {
-                if (output.size() >= 1) {
-                    ParDeclOp e = output.get(0);
-                    if (e.getId() != null) {
-                        String id = e.getId().toString();
-                        codeBuffer.append("return ").append(id).append(";\n}\n");
-                    }
-                }
-            }
-        } else {
-            //se return è void
-            codeBuffer.append("\n}\n");
-        }
 
         typeEnvirornment.exitScope();
         return null;
@@ -1016,32 +1044,178 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(ReturnStatOp returnStatOp) {
-        returnStatOp.getExpr().accept(this);
+        if (returnStatOp != null){
+            codeBuffer.append("return ");
+            returnStatOp.getExpr().accept(this);
+            codeBuffer.append("; \n");
+        }
         return null;
     }
 
     @Override
     public Object visit(WriteStatOp writeStatOp) {
-        writeStatOp.getExprList().accept(this);
+        ExprOp e = writeStatOp.getExpr();
+        String mode = writeStatOp.getMode();
+
+        if (e.getVar() instanceof String s) {
+            if (mode.equalsIgnoreCase("WRITE_LN")){
+                codeBuffer.append("println(");
+                codeBuffer.append("\"").append(s).append("\"");
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append("\"").append(s).append("\"");
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_T")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append("\"").append(s).append("\"");
+                codeBuffer.append("+ \"\\t\");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_B")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append("\"").append(s).append("\"");
+                codeBuffer.append("+ \"\\b\");\n");
+            }
+        } else if (e.getVar() instanceof Id id1){
+            if (mode.equalsIgnoreCase("WRITE_LN")){
+                codeBuffer.append("println(");
+                codeBuffer.append(id1);
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(id1);
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_T")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(id1);
+                codeBuffer.append("+ \"\\t\");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_B")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(id1);
+                codeBuffer.append("+ \"\\b\");\n");
+            }
+
+        } else if (e.getVar() instanceof Integer i){
+            if (mode.equalsIgnoreCase("WRITE_LN")){
+                codeBuffer.append("println(");
+                codeBuffer.append(i);
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(i);
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_T")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(i);
+                codeBuffer.append("+ \"\\t\");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_B")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(i);
+                codeBuffer.append("+ \"\\b\");\n");
+            }
+        } else if (e.getVar() instanceof Float f){
+            if (mode.equalsIgnoreCase("WRITE_LN")){
+                codeBuffer.append("println(");
+                codeBuffer.append(f);
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(f);
+                codeBuffer.append(");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_T")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(f);
+                codeBuffer.append("+ \"\\t\");\n");
+            } else if (mode.equalsIgnoreCase("WRITE_B")) {
+                codeBuffer.append("printf(");
+                codeBuffer.append(f);
+                codeBuffer.append("+ \"\\b\");\n");
+            }
+        } else if (e.getVar() instanceof Operations op){
+
+            if (mode.equalsIgnoreCase("WRITE_LN")){
+                codeBuffer.append("println(\"");
+                codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
+                idx = codeBuffer.length();
+                e.getOperation().accept(this);
+                codeBuffer.append(")\n");
+            } else if (mode.equalsIgnoreCase("WRITE_")) {
+                codeBuffer.append("printf(\"");
+                codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
+                idx = codeBuffer.length();
+                e.getOperation().accept(this);
+                codeBuffer.append(")\n");
+            } else if (mode.equalsIgnoreCase("WRITE_T")) {
+                codeBuffer.append("printf(\"");
+                codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
+                idx = codeBuffer.length();
+                e.getOperation().accept(this);
+                codeBuffer.append("\\t)\n");
+            } else if (mode.equalsIgnoreCase("WRITE_B")) {
+                codeBuffer.append("printf(\"");
+                codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
+                idx = codeBuffer.length();
+                e.getOperation().accept(this);
+                codeBuffer.append("\\b)\n");
+            }
+
+        } else if (e.getStatement() instanceof CallProcOp c) {
+
+            ArrayList<String> ret = typeEnvirornment.lookup(c.getId()).getReturnType();
+
+            if (ret.size() > 1) {
+                codeBuffer.append(c.getId()).append("_s new_").append(callProcCount).append(" = ");
+                c.accept(this);
+                codeBuffer.append("printf(");
+                codeBuffer.append("\"");
+                for (String type : ret) {
+                    codeBuffer.append(getConvOp(type));
+                    codeBuffer.append("\\n");
+                }
+                codeBuffer.append("\"");
+                codeBuffer.append(",");
+                for (int i = 0; i < ret.size(); i++) {
+                    codeBuffer.append("new_").append(callProcCount).append(".var_").append(i);
+                    if (i < ret.size() - 1) {
+                        codeBuffer.append(",");
+                    }
+                }
+                codeBuffer.append(");\n");
+                callProcCount++;
+            } else {
+                if (ret.get(0).equals("void")) {
+                    codeBuffer.append("printf(\"\");\n");
+                } else {
+                    codeBuffer.append(getTypeInC(ret.get(0))).append(" new_").append(callProcCount).append(" = ");
+                    c.accept(this);
+                    codeBuffer.append("printf(\"").append(getConvOp(ret.get(0))).append("\",").append(" new_")
+                            .append(callProcCount).append(");\n");
+                    callProcCount++;
+                }
+            }
+
+        }
+
+        idx = codeBuffer.length();
         return null;
     }
 
     @Override
     public Object visit(WhileStatOp whileStatOp) {
+
         if (whileStatOp.getStatListOp() != null && whileStatOp.getStatListOp() == null) {
             codeBuffer.append("while(");
             whileStatOp.getE().accept(this);
             codeBuffer.append("){\n");
+            whileStatOp.getVarDeclList().accept(this);
             whileStatOp.getStatListOp().accept(this);
             codeBuffer.append("}\n");
         } else if (whileStatOp.getStatListOp() != null && whileStatOp.getStatListOp() != null) {
             codeBuffer.append("while(");
             whileStatOp.getE().accept(this);
             codeBuffer.append("){\n");
-            whileStatOp.getStatListOp().accept(this);
+            whileStatOp.getVarDeclList().accept(this);
             whileStatOp.getStatListOp().accept(this);
             codeBuffer.append("}\n");
-            whileStatOp.getStatListOp().accept(this);
         }
 
         return null;
@@ -1061,6 +1235,8 @@ public class CcodeGen implements Visitor {
             writeStat.accept(this);
         } else if (statOp.getStatement() instanceof CallProcOp callProcOp) {//callProc
             callProcOp.accept(this);
+        } else if (statOp.getStatement() instanceof ReturnStatOp returnStatOp){
+            returnStatOp.accept(this);
         }
         return null;
     }

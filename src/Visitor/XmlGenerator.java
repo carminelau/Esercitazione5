@@ -258,7 +258,7 @@ public class XmlGenerator implements Visitor {
     @Override
     public Object visit(WriteStatOp writeStatOp) {
         Element statElement = document.createElement("WriteStatOp");
-        statElement.appendChild((Element) writeStatOp.getExprList().accept(this));//Exprlist già implementato
+        statElement.appendChild((Element) writeStatOp.getExpr().accept(this));//Exprlist già implementato
         return statElement;
     }
 
