@@ -95,23 +95,23 @@ main
         % b;
         if op = '1' then
             risultato := sommac(a,b);
-            stampa('la somma di ' & 'ciao' & ' e ' & b &  ' è ' & risultato);
+            stampa('la somma di a e b è ' & risultato);
         end if;
         if op = '2' then
             risultato := differenzac(a,b);
-            stampa('la differenza di ' & a & ' e ' & b &  ' è ' & risultato);
+            stampa('la differenza di a e b è ' & risultato);
         end if;
         if op = '3' then
             risultato := moltiplicazionec(a,b);
-            stampa('la moltiplicazione di ' & a & ' e ' & b &  ' è ' & risultato);
+            stampa('la moltiplicazione di a e b è ' & risultato);
         end if;
         if op = '4' then
             risultato := divisionec(a,b);
-            stampa('la divisione di ' & a & ' e ' & b &  ' è ' & risultato);
+            stampa('la divisione di a e b è ' & risultato);
         end if;
         if op = '5' then
             risultato := potenzac(a,b);
-            stampa('la potenza di ' & a & ' elevato a ' & b &  ' è ' & risultato);
+            stampa('la potenza di a e b è ' & 'risultato');
         end if;
 
         ?: 'Vuoi continuare ? si/no';

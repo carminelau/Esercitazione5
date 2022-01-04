@@ -2,8 +2,11 @@ package Statement;
 
 import Node.VarDeclListOp;
 import Operation.ExprOp;
+import Scope.Record;
 import Visitor.Visitor;
 import Visitor.XmlGenerator;
+
+import java.util.LinkedHashMap;
 
 public class IfStatOp extends Statement{
 
@@ -11,6 +14,7 @@ public class IfStatOp extends Statement{
     private StatListOp statList;
     private VarDeclListOp vars;
     private ElseOp elseStat;
+    private LinkedHashMap<String, Record> table;
 
     public IfStatOp(ExprOp e, VarDeclListOp vars,StatListOp statList,ElseOp elseStat) {
         this.e = e;
@@ -47,5 +51,12 @@ public class IfStatOp extends Statement{
 
     public Object accept(Visitor visitor) {
         return visitor.visit(this);
+    }
+
+    public void setTable(LinkedHashMap<String, Record> table) {
+        this.table = table;
+    }
+    public LinkedHashMap<String, Record> getTable() {
+        return table;
     }
 }

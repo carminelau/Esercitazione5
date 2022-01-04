@@ -25,9 +25,10 @@ public class TypeEnviroment {
         for (int i = stack.size()-1 ; i >= 0; i--) {
 
             HashMap<String, Record> currentTable = stack.get(i);
-
-            if (currentTable.containsKey(sym)) {
-                return currentTable.get(sym);
+            if (currentTable != null) {
+                if (currentTable.containsKey(sym)) {
+                    return currentTable.get(sym);
+                }
             }
         }
         return null;

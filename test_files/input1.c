@@ -28,10 +28,11 @@ void stampa(char* messaggio){
 int i = 1;
 while(i<=4){
 int incremento = 1;
-println("");
+printf("\n");
 i = i+incremento;
 }
-println(messaggio);
+printf(messaggio);
+printf("\n");
 }
 int main(  ){
 int a = 0, b = 0;
@@ -39,38 +40,49 @@ char* ans = "si";
 char* op = "";
 float risultato = 0;
 while(strcmp(ans,"si")== 0){
-printf("Scegli operazione 1 ADD 2 DIFF 3 MUL 4 DIV 5 POW"+ "\t");
+printf("Scegli operazione 1 ADD 2 DIFF 3 MUL 4 DIV 5 POW\t");
 op = malloc(sizeof(char));
 scanf("%s",op);
-printf("Inserisci il primo valore:"+ "\t");
+printf("Inserisci il primo valore:\t");
 scanf("%d",&a);
-printf("Inserisci il secondo valore:"+ "\t");
+printf("Inserisci il secondo valore:\t");
 scanf("%d",&b);
 if(strcmp(op,"1")== 0){
-(a,b);
-stampa(stampa();
+risultato = sommac(a,b);
+char buffer[29];
+snprintf(buffer, sizeof(buffer),"la somma di a e b è %f", risultato);
+stampa(buffer);
 }
 if(strcmp(op,"2")== 0){
-(a,b);
-stampa(stampa();
+risultato = differenzac(a,b);
+char buffer[34];
+snprintf(buffer, sizeof(buffer),"la differenza di a e b è %f", risultato);
+stampa(buffer);
 }
 if(strcmp(op,"3")== 0){
-(a,b);
-stampa(stampa();
+risultato = moltiplicazionec(a,b);
+char buffer[39];
+snprintf(buffer, sizeof(buffer),"la moltiplicazione di a e b è %f", risultato);
+stampa(buffer);
 }
 if(strcmp(op,"4")== 0){
-(a,b);
-stampa(stampa();
+risultato = divisionec(a,b);
+char buffer[33];
+snprintf(buffer, sizeof(buffer),"la divisione di a e b è %f", risultato);
+stampa(buffer);
 }
 if(strcmp(op,"5")== 0){
-(a,b);
-stampa(stampa();
+risultato = potenzac(a,b);
+char buffer[31];
+strcpy("buffer","la potenza di a e b è ");
+strcat("buffer","risultato");
+stampa(buffer);
 }
-printf("Vuoi continuare ? si/no"+ "\t");
+printf("Vuoi continuare ? si/no\t");
 ans = malloc(sizeof(char));
 scanf("%s",ans);
 }
-println("");
+printf("\n");
 printf("ciao");
 return 0;
 }

@@ -849,6 +849,8 @@ public class SemanticAnalysis implements Visitor{
                 }
             }
         }
+        if(ifStatOp.getVars() != null)
+            ifStatOp.getVars().accept(this);
         if (ifStatOp.getStatList() != null)
             ifStatOp.getStatList().accept(this);
         if (ifStatOp.getElseStat() != null)

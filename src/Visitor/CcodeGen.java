@@ -5,6 +5,7 @@ import Operation.*;
 import Scope.Record;
 import Statement.*;
 import Scope.*;
+import jdk.dynalink.Operation;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -168,37 +169,30 @@ public class CcodeGen implements Visitor {
 
     public void getStrcat(String s1, String s2) {
 
-        codeBuffer.insert(idx, "strcat(");
-        idx += 7;
-        codeBuffer.insert(idx, s1);
-        idx += s1.length();
-        codeBuffer.insert(idx, ",");
-        idx += 2;
-        codeBuffer.insert(idx, s2);
-        idx += s2.length();
-        codeBuffer.insert(idx, ");");
-        idx += 2;
+        codeBuffer.append("strcat(\"");
+
+        codeBuffer.append(s1);
+
+        codeBuffer.append("\",\"");
+
+        codeBuffer.append(s2);
+
+        codeBuffer.append("\");\n");
+
     }
 
     public void getStrcpy(String s1, String s2) {
 
-        codeBuffer.insert(idx, "strcpy(");
-        idx += 7;
-        codeBuffer.insert(idx, s1);
-        idx += s1.length();
-        codeBuffer.insert(idx, ",");
-        idx += 2;
-        codeBuffer.insert(idx, s2);
-        idx += s2.length();
-        codeBuffer.insert(idx, ");");
-        idx += 2;
-    }
+        codeBuffer.append("strcpy(\"");
 
-    public void getStrconcat(String s1, String s2) {
-        int length = s1.length() + s2.length();
-        codeBuffer.append("char risultato[" +length + "];\n");
-        getStrcpy("risultato",s1);
-        getStrcat("risultato",s2);
+        codeBuffer.append(s1);
+
+        codeBuffer.append("\",\"");
+
+        codeBuffer.append(s2);
+
+        codeBuffer.append("\");\n");
+
     }
 
     public void getPow(ExprOp e1, ExprOp e2) {
@@ -348,12 +342,9 @@ public class CcodeGen implements Visitor {
         boolean multiCall = false;
         ExprOp exprOp = assignStatOp.getExpr();
         if (exprOp.getStatement() != null && exprOp.getStatement() instanceof CallProcOp callProcOp) {
-            if(typeEnvirornment.lookup(callProcOp.getId()).getReturnType()!= null) {
-                if (typeEnvirornment.lookup(callProcOp.getId()).getReturnType().size() > 1) {
-                    codeBuffer.append(callProcOp.getId()).append(" = ");
-                    exprOp.accept(this);
-                }
-            }
+
+            codeBuffer.append(assignStatOp.getId()).append(" = ").append(callProcOp.getId());
+            exprOp.accept(this);
             codeBuffer.append("(");
             if (callProcOp.getExprList() != null) {
                 int j = 1;
@@ -456,27 +447,51 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(CallProcOp callProcOp) {
-        System.out.println(callProcOp.getId());
-        codeBuffer.append(callProcOp.getId()).append("(");
+
+
 
         if (callProcOp.getExprList() != null) {
             int i = 1;
             for (ExprOp e : callProcOp.getExprList().getExprlist()) {
                 if (e.getOperation() != null) {
+                    if (!(e.getOperation() instanceof StrConcatOp)) {
+                        System.out.println(callProcOp.getId());
                         codeBuffer.append(callProcOp.getId()).append("(");
-                        idx = codeBuffer.length();
                         e.getOperation().accept(this);
                         if (i < callProcOp.getExprList().getExprlist().size()) {
                             codeBuffer.append(",");
                             i++;
                         }
+                    } else {
+                        Operations op = e.getOperation();
+                        ExprOp e1=op.getE1();
+                        ExprOp e2=op.getE2();
+                        if (e1.getVar() instanceof String s1 && e2.getVar() instanceof String s2) {
+                            int length = s1.length()+s2.length();
+                            codeBuffer.append("char buffer[").append(length).append("];\n"); //append("snprintf(buffer, sizeof(buffer),")
+                            getStrcpy("buffer",s1);
+                            getStrcat("buffer",s2);
+
+                            codeBuffer.append(callProcOp.getId()).append("(buffer");
+                        } else if (e1.getVar() instanceof String s1 && e2.getVar() instanceof Id id2) {
+                            int length = s1.length()+id2.toString().length();
+                            codeBuffer.append("char buffer[").append(length).append("];\n"); //
+                            codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s1).append(getConv(id2.toString())).append("\", ").append(id2).append(");\n");
+
+                            codeBuffer.append(callProcOp.getId()).append("(buffer");
+                        }
+                    }
                 } else if (e.getVar() != null && e.getVar() instanceof Id id) {
+                    System.out.println(callProcOp.getId());
+                    codeBuffer.append(callProcOp.getId()).append("(");
                     codeBuffer.append(id);
                     if (i < callProcOp.getExprList().getExprlist().size()) {
                         codeBuffer.append(",");
                         i++;
                     }
                 } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp c) {
+                    System.out.println(callProcOp.getId());
+                    codeBuffer.append(callProcOp.getId()).append("(");
                     ArrayList<String> types = typeEnvirornment.lookup(c.getId()).getReturnType();
                     if (types.size() > 1) {
                         addCode(c);
@@ -489,6 +504,8 @@ public class CcodeGen implements Visitor {
                             }
                         }
                     } else {
+                        System.out.println(callProcOp.getId());
+                        codeBuffer.append(callProcOp.getId()).append("(");
                         c.accept(this);
                         codeBuffer.deleteCharAt(codeBuffer.length() - 1);
                         codeBuffer.deleteCharAt(codeBuffer.length() - 1);
@@ -500,6 +517,8 @@ public class CcodeGen implements Visitor {
                         i++;
                     }
                 } else {
+                    System.out.println(callProcOp.getId());
+                    codeBuffer.append(callProcOp.getId()).append("(");
                     if (e.getType().contains("String")) {
                         codeBuffer.append("\"");
                     }
@@ -829,17 +848,28 @@ public class CcodeGen implements Visitor {
         } else if (operation instanceof StrConcatOp) {
 
             if (e1.getVar() != null && e2.getVar() != null) {
-                if (e1.getVar() instanceof String && e2.getVar() instanceof String)
-                    codeBuffer.append("\"" + e1.getVar().toString() + e2.getVar().toString()+"\"");
+                if (e1.getVar() instanceof String s1 && e2.getVar() instanceof String s2){
+                    int length = s1.length()+s2.length();
+                    codeBuffer.append("char buffer[").append(length).append("];\n"); //append("snprintf(buffer, sizeof(buffer),")
+                    getStrcpy("buffer",s1);
+                    getStrcat("buffer",s2);
+                }
                 else if (e1.getVar() instanceof Id id1 && e2.getVar() instanceof Id id2) {
-
-                    codeBuffer.append("\"" + id1 + e2.getVar().toString() + "\"");
+                    int length = id1.toString().length()+id2.toString().length();
+                    codeBuffer.append("char buffer[").append(length).append("];\n"); //
+                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(getConv(id2.toString())).append("\", ").append(id1).append(", ").append(id2).append(");\n");
+                }else if (e1.getVar() instanceof String s1 && e2.getVar() instanceof Id id2) {
+                    int length = s1.length()+id2.toString().length();
+                    codeBuffer.append("char buffer[").append(length).append("];\n"); //
+                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s1).append(getConv(id2.toString())).append("\", ").append(id2).append(");\n");
+                } else if (e2.getVar() instanceof String s2 && e1.getVar() instanceof Id id1) {
+                    int length = s2.length()+id1.toString().length();
+                    codeBuffer.append("char buffer[").append(length).append("];\n"); //
+                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s2).append(getConv(id1.toString())).append("\", ").append(id1).append(");\n");
                 }
             } else if (e1.getOperation() != null && e2.getVar() != null){
                 if (e1.getOperation() instanceof StrConcatOp) {
-
-
-
+                    //DA IMPLEMENTAREEEEEEE
                 }
             }
         }
@@ -860,21 +890,22 @@ public class CcodeGen implements Visitor {
             exprOp.getOperation().accept(this);
         } else if (exprOp.getStatement() != null && exprOp.getStatement() instanceof CallProcOp c) {
             ArrayList<String> types = typeEnvirornment.lookup(c.getId()).getReturnType();
-            if (types.get(0).equals("string")) {
-                //Se ho una chiamata a funzione che restituisce una stringa faccio il confronto in java
-                String s = (String) c.getExprList().getExprlist().get(0).getVar();
-                codeBuffer.append(s.length());
-            } else {
-                idx = codeBuffer.lastIndexOf("\n");
-                codeBuffer.insert(idx, "\n");
-                idx++;
-                c.accept(this);
-                //tolgo un ';' di troppo aggiunto sia da callproc che da operation
-                codeBuffer.deleteCharAt(codeBuffer.length() - 1);
-                codeBuffer.deleteCharAt(codeBuffer.length() - 1);
-                idx = codeBuffer.length();
+            if (types != null) {
+                if (types.get(0).equals("string")) {
+                    //Se ho una chiamata a funzione che restituisce una stringa faccio il confronto in java
+                    String s = (String) c.getExprList().getExprlist().get(0).getVar();
+                    codeBuffer.append(s.length());
+                } else {
+                    idx = codeBuffer.lastIndexOf("\n");
+                    codeBuffer.insert(idx, "\n");
+                    idx++;
+                    c.accept(this);
+                    //tolgo un ';' di troppo aggiunto sia da callproc che da operation
+                    codeBuffer.deleteCharAt(codeBuffer.length() - 1);
+                    codeBuffer.deleteCharAt(codeBuffer.length() - 1);
+                    idx = codeBuffer.length();
+                }
             }
-
         }
         return null;
     }
@@ -1101,8 +1132,8 @@ public class CcodeGen implements Visitor {
 
         if (e.getVar() instanceof String s) {
             if (mode.equalsIgnoreCase("WRITE_LN")){
-                codeBuffer.append("println(");
-                codeBuffer.append("\"").append(s).append("\"");
+                codeBuffer.append("printf(");
+                codeBuffer.append("\"").append(s).append("\\n\"");
                 codeBuffer.append(");\n");
             } else if (mode.equalsIgnoreCase("WRITE_")) {
                 codeBuffer.append("printf(");
@@ -1110,18 +1141,19 @@ public class CcodeGen implements Visitor {
                 codeBuffer.append(");\n");
             } else if (mode.equalsIgnoreCase("WRITE_T")) {
                 codeBuffer.append("printf(");
-                codeBuffer.append("\"").append(s).append("\"");
-                codeBuffer.append("+ \"\\t\");\n");
+                codeBuffer.append("\"").append(s);
+                codeBuffer.append("\\t\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_B")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append("\"").append(s).append("\"");
-                codeBuffer.append("+ \"\\b\");\n");
+                codeBuffer.append("\\b\");\n");
             }
         } else if (e.getVar() instanceof Id id1){
             if (mode.equalsIgnoreCase("WRITE_LN")){
-                codeBuffer.append("println(");
+                codeBuffer.append("printf(");
                 codeBuffer.append(id1);
                 codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\n\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(id1);
@@ -1129,18 +1161,21 @@ public class CcodeGen implements Visitor {
             } else if (mode.equalsIgnoreCase("WRITE_T")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(id1);
-                codeBuffer.append("+ \"\\t\");\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\t\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_B")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(id1);
-                codeBuffer.append("+ \"\\b\");\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\b\");\n");
             }
 
         } else if (e.getVar() instanceof Integer i){
             if (mode.equalsIgnoreCase("WRITE_LN")){
-                codeBuffer.append("println(");
+                codeBuffer.append("printf(");
                 codeBuffer.append(i);
                 codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\n\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(i);
@@ -1148,17 +1183,20 @@ public class CcodeGen implements Visitor {
             } else if (mode.equalsIgnoreCase("WRITE_T")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(i);
-                codeBuffer.append("+ \"\\t\");\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\t\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_B")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(i);
-                codeBuffer.append("+ \"\\b\");\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\b\");\n");
             }
         } else if (e.getVar() instanceof Float f){
             if (mode.equalsIgnoreCase("WRITE_LN")){
-                codeBuffer.append("println(");
+                codeBuffer.append("printf(");
                 codeBuffer.append(f);
                 codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\n\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(f);
@@ -1166,20 +1204,23 @@ public class CcodeGen implements Visitor {
             } else if (mode.equalsIgnoreCase("WRITE_T")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(f);
-                codeBuffer.append("+ \"\\t\");\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\t\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_B")) {
                 codeBuffer.append("printf(");
                 codeBuffer.append(f);
-                codeBuffer.append("+ \"\\b\");\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\b\");\n");
             }
         } else if (e.getVar() instanceof Operations op){
 
             if (mode.equalsIgnoreCase("WRITE_LN")){
-                codeBuffer.append("println(\"");
+                codeBuffer.append("printf(\"");
                 codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
                 idx = codeBuffer.length();
                 e.getOperation().accept(this);
-                codeBuffer.append(")\n");
+                codeBuffer.append(");\n");
+                codeBuffer.append("printf(\"\\n\");\n");
             } else if (mode.equalsIgnoreCase("WRITE_")) {
                 codeBuffer.append("printf(\"");
                 codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
@@ -1191,13 +1232,13 @@ public class CcodeGen implements Visitor {
                 codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
                 idx = codeBuffer.length();
                 e.getOperation().accept(this);
-                codeBuffer.append("\\t)\n");
+                codeBuffer.append("\\t);\n");
             } else if (mode.equalsIgnoreCase("WRITE_B")) {
                 codeBuffer.append("printf(\"");
                 codeBuffer.append(getConvOp(e.getOperation().getOpType())).append("\",");
                 idx = codeBuffer.length();
                 e.getOperation().accept(this);
-                codeBuffer.append("\\b)\n");
+                codeBuffer.append("\\b);\n");
             }
 
         } else if (e.getStatement() instanceof CallProcOp c) {
@@ -1320,6 +1361,7 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(IfStatOp ifStatOp) {
+        typeEnvirornment.enterScope(ifStatOp.getTable());
         codeBuffer.append("if(");
         if (ifStatOp.getE().getOperation() != null) {
             idx = codeBuffer.length();
@@ -1340,12 +1382,14 @@ public class CcodeGen implements Visitor {
             codeBuffer.append(ifStatOp.getE().getVar());
             codeBuffer.append("){\n");
         }
+        ifStatOp.getVars().accept(this);
         ifStatOp.getStatList().accept(this);
         codeBuffer.append("}\n");
 
         if (ifStatOp.getElseStat() != null) {
             ifStatOp.getElseStat().accept(this);
         }
+        typeEnvirornment.exitScope();
         return null;
     }
 }
