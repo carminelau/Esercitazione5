@@ -3,7 +3,7 @@
 #include <malloc.h> 
 #include <stdbool.h> 
 
-null c = 1;
+int c = 1;
 float sommac(float a,float b){
 float result = a+b;
 return result; 
@@ -25,42 +25,44 @@ float result = pow(a,b);
 return result; 
 }
 void stampa(char* messaggio){
-null i = 1;
+int i = 1;
 while(i<=4){
-null println("");
+int incremento = 1;
+println("");
 i = i+incremento;
 }
 println(messaggio);
 }
 int main(  ){
-null a = 0, b = 0;
-null ans = "si";
-null op = 0;
+int a = 0, b = 0;
+char* ans = "si";
+char* op = "";
 float risultato = 0;
 while(strcmp(ans,"si")== 0){
 printf("Scegli operazione 1 ADD 2 DIFF 3 MUL 4 DIV 5 POW"+ "\t");
-scanf("%d",&op);
+op = malloc(sizeof(char));
+scanf("%s",op);
 printf("Inserisci il primo valore:"+ "\t");
 scanf("%d",&a);
 printf("Inserisci il secondo valore:"+ "\t");
 scanf("%d",&b);
-if(op==1){
+if(strcmp(op,"1")== 0){
 (a,b);
 stampa(stampa();
 }
-if(op==2){
+if(strcmp(op,"2")== 0){
 (a,b);
 stampa(stampa();
 }
-if(op==3){
+if(strcmp(op,"3")== 0){
 (a,b);
 stampa(stampa();
 }
-if(op==4){
+if(strcmp(op,"4")== 0){
 (a,b);
 stampa(stampa();
 }
-if(op==5){
+if(strcmp(op,"5")== 0){
 (a,b);
 stampa(stampa();
 }

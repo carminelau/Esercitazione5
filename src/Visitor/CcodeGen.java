@@ -172,12 +172,33 @@ public class CcodeGen implements Visitor {
         idx += 7;
         codeBuffer.insert(idx, s1);
         idx += s1.length();
-        codeBuffer.insert(idx, ",\"");
+        codeBuffer.insert(idx, ",");
         idx += 2;
         codeBuffer.insert(idx, s2);
         idx += s2.length();
-        codeBuffer.insert(idx, "\")");
+        codeBuffer.insert(idx, ");");
         idx += 2;
+    }
+
+    public void getStrcpy(String s1, String s2) {
+
+        codeBuffer.insert(idx, "strcpy(");
+        idx += 7;
+        codeBuffer.insert(idx, s1);
+        idx += s1.length();
+        codeBuffer.insert(idx, ",");
+        idx += 2;
+        codeBuffer.insert(idx, s2);
+        idx += s2.length();
+        codeBuffer.insert(idx, ");");
+        idx += 2;
+    }
+
+    public void getStrconcat(String s1, String s2) {
+        int length = s1.length() + s2.length();
+        codeBuffer.append("char risultato[" +length + "];\n");
+        getStrcpy("risultato",s1);
+        getStrcat("risultato",s2);
     }
 
     public void getPow(ExprOp e1, ExprOp e2) {
@@ -263,7 +284,7 @@ public class CcodeGen implements Visitor {
         programOp.getVarDeclOpList().accept(this);
         programOp.getProcOpList().accept(this);
         programOp.getMain().accept(this);
-        System.out.println(codeBuffer);
+        //System.out.println(codeBuffer);
         typeEnvirornment.exitScope();
         return null;
     }
@@ -435,19 +456,20 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(CallProcOp callProcOp) {
+        System.out.println(callProcOp.getId());
         codeBuffer.append(callProcOp.getId()).append("(");
 
         if (callProcOp.getExprList() != null) {
             int i = 1;
             for (ExprOp e : callProcOp.getExprList().getExprlist()) {
                 if (e.getOperation() != null) {
-                    codeBuffer.append(callProcOp.getId()).append("(");
-                    idx = codeBuffer.length();
-                    e.getOperation().accept(this);
-                    if (i < callProcOp.getExprList().getExprlist().size()) {
-                        codeBuffer.append(",");
-                        i++;
-                    }
+                        codeBuffer.append(callProcOp.getId()).append("(");
+                        idx = codeBuffer.length();
+                        e.getOperation().accept(this);
+                        if (i < callProcOp.getExprList().getExprlist().size()) {
+                            codeBuffer.append(",");
+                            i++;
+                        }
                 } else if (e.getVar() != null && e.getVar() instanceof Id id) {
                     codeBuffer.append(id);
                     if (i < callProcOp.getExprList().getExprlist().size()) {
@@ -806,15 +828,19 @@ public class CcodeGen implements Visitor {
             e1.accept(this);
         } else if (operation instanceof StrConcatOp) {
 
-            if (e1.getVar() instanceof String s1 && e2.getVar() instanceof String s2) {
-                /*
-                    if Return value < 0 then it indicates str1 is less than str2.
-                    if Return value > 0 then it indicates str2 is less than str1.
-                    if Return value = 0 then it indicates str1 is equal to str2.
+            if (e1.getVar() != null && e2.getVar() != null) {
+                if (e1.getVar() instanceof String && e2.getVar() instanceof String)
+                    codeBuffer.append("\"" + e1.getVar().toString() + e2.getVar().toString()+"\"");
+                else if (e1.getVar() instanceof Id id1 && e2.getVar() instanceof Id id2) {
 
-                    int strcmp(const char *str1, const char *str2)
-                */
-                getStrcat(s1,s2);
+                    codeBuffer.append("\"" + id1 + e2.getVar().toString() + "\"");
+                }
+            } else if (e1.getOperation() != null && e2.getVar() != null){
+                if (e1.getOperation() instanceof StrConcatOp) {
+
+
+
+                }
             }
         }
         return null;
@@ -859,7 +885,7 @@ public class CcodeGen implements Visitor {
 
         for (Map.Entry<String, ExprOp> entry : idListInitOp.getList().entrySet()) {
             String var = entry.getKey();
-            System.out.println(var + "Record: " + typeEnvirornment.lookup(var));
+            //System.out.println(var + "Record: " + typeEnvirornment.lookup(var));
             if (typeEnvirornment.lookup(var) != null) {
                 String type = typeEnvirornment.lookup(var).getType();
                 ExprOp value = entry.getValue();
@@ -1023,8 +1049,24 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(VarDeclOp varDecl) {
+        if(!varDecl.getTipo().getTipo().equals("var")){
         codeBuffer.append(getTypeInC(varDecl.getTipo().getTipo())).append(" ");
         varDecl.getList().accept(this);
+        }
+        else {
+            String type ="" ;
+            for (Map.Entry<String, ExprOp> entry : varDecl.getList().getList().entrySet()) {
+                String var = entry.getKey();
+                //System.out.println(var + "Record: " + typeEnvirornment.lookup(var));
+                if (typeEnvirornment.lookup(var) != null) {
+                    Record rec = typeEnvirornment.lookup(var);
+                    type = rec.getType();
+                }
+            }
+            codeBuffer.append(getTypeInC(type)).append(" ");
+            varDecl.getList().accept(this);
+        }
+
         return null;
     }
 
@@ -1201,7 +1243,7 @@ public class CcodeGen implements Visitor {
 
     @Override
     public Object visit(WhileStatOp whileStatOp) {
-
+        typeEnvirornment.enterScope(whileStatOp.getTable());
         if (whileStatOp.getStatListOp() != null && whileStatOp.getStatListOp() == null) {
             codeBuffer.append("while(");
             whileStatOp.getE().accept(this);
@@ -1217,7 +1259,7 @@ public class CcodeGen implements Visitor {
             whileStatOp.getStatListOp().accept(this);
             codeBuffer.append("}\n");
         }
-
+        typeEnvirornment.exitScope();
         return null;
     }
 
@@ -1244,13 +1286,14 @@ public class CcodeGen implements Visitor {
     @Override
     public Object visit(ReadStatOp readlnStatOp) {
         if (readlnStatOp.getIdList().getIdList().size() == 1) {
-
-            if (getConv(readlnStatOp.getIdList().getIdList().get(0)).equals("%s")) {
+            System.out.println(readlnStatOp.getIdList().getIdList().get(0));
+            Record rec = typeEnvirornment.lookup(readlnStatOp.getIdList().getIdList().get(0));
+            if (getConvOp(rec.getType()).equals("%s")) {
                 codeBuffer.append(readlnStatOp.getIdList().getIdList().get(0)).append(" = malloc(sizeof(char));\n");
             }
             codeBuffer.append("scanf(\"");
             codeBuffer.append(getConv(readlnStatOp.getIdList().getIdList().get(0)));
-            if (getConv(readlnStatOp.getIdList().getIdList().get(0)).equals("%s")) {
+            if (getConvOp(rec.getType()).equals("%s")) {
                 codeBuffer.append("\",").append(readlnStatOp.getIdList().getIdList().get(0)).append(");\n");
             } else
                 codeBuffer.append("\",&").append(readlnStatOp.getIdList().getIdList().get(0)).append(");\n");

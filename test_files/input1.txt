@@ -68,8 +68,9 @@ end fun;
 fun stampa(string messaggio)
 
 	var i := 1;
+
 	while i <= 4 loop
-		var incremento := 1;
+        var incremento := 1;
 		?. '';
 		i := i + incremento;
 	end loop;
@@ -82,7 +83,7 @@ end fun;
 main
 	var a := 0, b := 0;
 	var ans := 'si';
-	var op := 0;
+	var op := '';
 	real risultato := 0;
 
     while ans = 'si' loop
@@ -92,23 +93,23 @@ main
         % a;
         ?: 'Inserisci il secondo valore:';
         % b;
-        if op = 1 then
+        if op = '1' then
             risultato := sommac(a,b);
-            stampa('la somma di ' & a & ' e ' & b &  ' è ' & risultato);
+            stampa('la somma di ' & 'ciao' & ' e ' & b &  ' è ' & risultato);
         end if;
-        if op = 2 then
+        if op = '2' then
             risultato := differenzac(a,b);
             stampa('la differenza di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
-        if op = 3 then
+        if op = '3' then
             risultato := moltiplicazionec(a,b);
             stampa('la moltiplicazione di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
-        if op = 4 then
+        if op = '4' then
             risultato := divisionec(a,b);
             stampa('la divisione di ' & a & ' e ' & b &  ' è ' & risultato);
         end if;
-        if op = 5 then
+        if op = '5' then
             risultato := potenzac(a,b);
             stampa('la potenza di ' & a & ' elevato a ' & b &  ' è ' & risultato);
         end if;

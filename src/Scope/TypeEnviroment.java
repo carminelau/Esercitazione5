@@ -20,15 +20,13 @@ public class TypeEnviroment {
         return currentTable.get(sym);
     }
 
-    public Record lookup(String sym){
+    public Record lookup(String sym) {
 
-        HashMap<String,Record> currentTable =  stack.get(stack.size()-1);
+        for (int i = stack.size()-1 ; i >= 0; i--) {
 
-        if(currentTable.containsKey(sym)){
-            return currentTable.get(sym);
-        }else{
-            currentTable = stack.get(0);
-            if(currentTable.containsKey(sym)){
+            HashMap<String, Record> currentTable = stack.get(i);
+
+            if (currentTable.containsKey(sym)) {
                 return currentTable.get(sym);
             }
         }

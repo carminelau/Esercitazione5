@@ -566,6 +566,7 @@ public class SemanticAnalysis implements Visitor{
             record.setSym(var);
             record.setKind("var");
 
+
             type.addId(record);
         }
 
@@ -767,11 +768,12 @@ public class SemanticAnalysis implements Visitor{
                 }
             }
         }
-        if (whileStatOp.getStatListOp() != null) {
-            for (StatOp statOp : whileStatOp.getStatListOp().getStatements()) {
-                statOp.accept(this);
+        if(whileStatOp.getVarDeclList() != null){
+            for ( VarDeclOp vardeclop : whileStatOp.getVarDeclList().getList()){
+                vardeclop.accept(this);
             }
         }
+
         if (whileStatOp.getStatListOp() != null) {
             for (StatOp statOp : whileStatOp.getStatListOp().getStatements()) {
                 statOp.accept(this);
