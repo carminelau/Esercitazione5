@@ -81,7 +81,7 @@ end fun;
 
 #programma main
 main
-	var a := 0, b := 0;
+	real a := 0, b := 0;
 	var ans := 'si';
 	var op := '';
 	real risultato := 0;
@@ -111,7 +111,7 @@ main
         end if;
         if op = '5' then
             risultato := potenzac(a,b);
-            stampa('la potenza di a e b è ' & 'risultato');
+            stampa('la potenza di a e b è ' & risultato);
         end if;
 
         ?: 'Vuoi continuare ? si/no';

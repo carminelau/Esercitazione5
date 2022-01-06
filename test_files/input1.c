@@ -35,7 +35,7 @@ printf(messaggio);
 printf("\n");
 }
 int main(  ){
-int a = 0, b = 0;
+float a = 0, b = 0;
 char* ans = "si";
 char* op = "";
 float risultato = 0;
@@ -44,9 +44,9 @@ printf("Scegli operazione 1 ADD 2 DIFF 3 MUL 4 DIV 5 POW\t");
 op = malloc(sizeof(char));
 scanf("%s",op);
 printf("Inserisci il primo valore:\t");
-scanf("%d",&a);
+scanf("%f",&a);
 printf("Inserisci il secondo valore:\t");
-scanf("%d",&b);
+scanf("%f",&b);
 if(strcmp(op,"1")== 0){
 risultato = sommac(a,b);
 char buffer[29];
@@ -74,8 +74,7 @@ stampa(buffer);
 if(strcmp(op,"5")== 0){
 risultato = potenzac(a,b);
 char buffer[31];
-strcpy("buffer","la potenza di a e b è ");
-strcat("buffer","risultato");
+snprintf(buffer, sizeof(buffer),"la potenza di a e b è %f", risultato);
 stampa(buffer);
 }
 printf("Vuoi continuare ? si/no\t");

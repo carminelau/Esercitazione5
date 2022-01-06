@@ -448,8 +448,6 @@ public class CcodeGen implements Visitor {
     @Override
     public Object visit(CallProcOp callProcOp) {
 
-
-
         if (callProcOp.getExprList() != null) {
             int i = 1;
             for (ExprOp e : callProcOp.getExprList().getExprlist()) {
@@ -846,32 +844,59 @@ public class CcodeGen implements Visitor {
             idx++;
             e1.accept(this);
         } else if (operation instanceof StrConcatOp) {
-
             if (e1.getVar() != null && e2.getVar() != null) {
-                if (e1.getVar() instanceof String s1 && e2.getVar() instanceof String s2){
-                    int length = s1.length()+s2.length();
-                    codeBuffer.append("char buffer[").append(length).append("];\n"); //append("snprintf(buffer, sizeof(buffer),")
-                    getStrcpy("buffer",s1);
-                    getStrcat("buffer",s2);
-                }
-                else if (e1.getVar() instanceof Id id1 && e2.getVar() instanceof Id id2) {
-                    int length = id1.toString().length()+id2.toString().length();
+                if (e1.getVar() instanceof String s1 && e2.getVar() instanceof String s2) {
+                    int length = s1.length() + s2.length();
+                    codeBuffer.append("char buffer[").append(length).append("];\n");
+                    getStrcpy("buffer", s1);
+                    getStrcat("buffer", s2);
+                } else if (e1.getVar() instanceof Id id1 && e2.getVar() instanceof Id id2) {
+                    int length = id1.toString().length() + id2.toString().length();
                     codeBuffer.append("char buffer[").append(length).append("];\n"); //
-                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(getConv(id2.toString())).append("\", ").append(id1).append(", ").append(id2).append(");\n");
-                }else if (e1.getVar() instanceof String s1 && e2.getVar() instanceof Id id2) {
-                    int length = s1.length()+id2.toString().length();
+                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(" ").append(getConv(id2.toString())).append("\", ").append(id1).append(", ").append(id2).append(");\n");
+                } else if (e1.getVar() instanceof String s1 && e2.getVar() instanceof Id id2) {
+                    int length = s1.length() + id2.toString().length();
                     codeBuffer.append("char buffer[").append(length).append("];\n"); //
-                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s1).append(getConv(id2.toString())).append("\", ").append(id2).append(");\n");
+                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s1).append(" ").append(getConv(id2.toString())).append("\", ").append(id2).append(");\n");
                 } else if (e2.getVar() instanceof String s2 && e1.getVar() instanceof Id id1) {
-                    int length = s2.length()+id1.toString().length();
+                    int length = s2.length() + id1.toString().length();
                     codeBuffer.append("char buffer[").append(length).append("];\n"); //
-                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s2).append(getConv(id1.toString())).append("\", ").append(id1).append(");\n");
-                }
-            } else if (e1.getOperation() != null && e2.getVar() != null){
-                if (e1.getOperation() instanceof StrConcatOp) {
-                    //DA IMPLEMENTAREEEEEEE
+                    codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s2).append(" ").append(getConv(id1.toString())).append("\", ").append(id1).append(");\n");
                 }
             }
+//            else if (e1.getOperation() != null && e2.getVar() != null) {
+//                if (e1.getOperation() instanceof StrConcatOp strc) {
+//                    if (strc.getE1().getVar() != null && strc.getE2().getVar() != null) {
+//                        if (strc.getE1().getVar() instanceof String s1 && strc.getE2().getVar() instanceof String s2 && e2.getVar() instanceof String s3) {
+//                            int length = s1.length() + s2.length() + s3.length();
+//                            codeBuffer.append("char buffer[").append(length).append("];\n");
+//                            getStrcpy("buffer", s1);
+//                            getStrcat("buffer", s2);
+//                            getStrcat("buffer", s3);
+//                        } else if (strc.getE1().getVar() instanceof Id id1 && strc.getE2().getVar() instanceof Id id2 && e2.getVar() instanceof Id id3) {
+//                            int length = id1.toString().length() + id2.toString().length() + id3.toString().length();
+//                            codeBuffer.append("char buffer[").append(length).append("];\n"); //
+//                            codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(" ").append(getConv(id2.toString())).append(" ").append(getConv(id3.toString())).append("\", ").append(id1).append(", ").append(id2).append(", ").append(id3).append(");\n");
+//                        } else if (strc.getE1().getVar() instanceof String s1 && strc.getE2().getVar() instanceof Id id2 && e2.getVar() instanceof Id id3) {
+//                            int length = s1.length() + id2.toString().length() + id3.toString().length();
+//                            codeBuffer.append("char buffer[").append(length).append("];\n"); //
+//                            codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(s1).append(" ").append(getConv(id2.toString())).append(" ").append(getConv(id3.toString())).append("\", ").append(id2).append(", ").append(id3).append(");\n");
+//                        } else if (strc.getE2().getVar() instanceof String s2 && strc.getE1().getVar() instanceof Id id1 && e2.getVar() instanceof Id id3) {
+//                            int length = s2.length() + id1.toString().length() + id3.toString().length();
+//                            codeBuffer.append("char buffer[").append(length).append("];\n"); //
+//                            codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(" ").append(s2).append(" ").append(getConv(id3.toString())).append("\", ").append(id1).append(", ").append(id3).append(");\n");
+//                        } else if (strc.getE2().getVar() instanceof String s2 && strc.getE1().getVar() instanceof Id id1 && e2.getVar() instanceof String s3) {
+//                            int length = s2.length() + id1.toString().length() + s3.length();
+//                            codeBuffer.append("char buffer[").append(length).append("];\n"); //
+//                            codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(" ").append(s2).append(" ").append(s3).append("\", ").append(id1).append(");\n");
+//                        } else if (strc.getE2().getVar() instanceof Id id2 && strc.getE1().getVar() instanceof Id id1 && e2.getVar() instanceof String s3) {
+//                            int length = id2.toString().length() + id1.toString().length() + s3.length();
+//                            codeBuffer.append("char buffer[").append(length).append("];\n"); //
+//                            codeBuffer.append("snprintf(buffer, sizeof(buffer),").append("\"").append(getConv(id1.toString())).append(" ").append(getConv(id2.toString())).append(" ").append(s3).append("\", ").append(id1).append(", ").append(id2).append(");\n");
+//                        }
+//                    }
+//                }
+//            }
         }
         return null;
     }
