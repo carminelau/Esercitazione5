@@ -10,6 +10,12 @@ public class ExprOp {
     private Operations operation;
     private Statement statement;
 
+    public String getOut() {
+        return out;
+    }
+
+    private String out;
+
     public ExprOp(Operations operation) {
         this.operation = operation;
     }
@@ -25,6 +31,11 @@ public class ExprOp {
     }
 
     public ExprOp(Id id) {
+        this.var = id;
+    }
+
+    public ExprOp(String out,Id id) {
+        this.out = out;
         this.var = id;
     }
 

@@ -295,25 +295,33 @@ public class XmlGenerator implements Visitor {
     public Object visit(ExprOp expr) {
         Element exprElement = document.createElement("ExprOp");
         Operations operation = expr.getOperation();
-        CallProcOp statement =(CallProcOp) expr.getStatement();
+        CallProcOp statement = (CallProcOp) expr.getStatement();
+        String out = expr.getOut();
         Element e;
-        if(statement != null){
+        if (statement != null) {
             e = (Element) statement.accept(this);
             exprElement.appendChild(e);
-        }else if (operation != null ) {
+        } else if (operation != null) {
             e = (Element) operation.accept(this);
             exprElement.appendChild(e);
         } else {
             if (expr.getType().equals("Null")) {
                 exprElement.appendChild(document.createTextNode("(" + expr.getType() + ")"));
             } else {
-                exprElement.appendChild(document.createTextNode("(" + expr.getType()));
-                if (expr.getVar() != null) {
-                    exprElement.appendChild(document.createTextNode(",\"" + expr.getVar().toString() + "\")"));
+                if (out == null ){
+                    exprElement.appendChild(document.createTextNode("(" + expr.getType()));
+                    if (expr.getVar() != null) {
+                        exprElement.appendChild(document.createTextNode(",\"" + expr.getVar().toString() + "\")"));
+                    }
+                } else {
+                    exprElement.appendChild(document.createTextNode("( " + "out " + expr.getType()));
+                    if (expr.getVar() != null) {
+                        exprElement.appendChild(document.createTextNode(",\"" + expr.getVar().toString() + "\")"));
+                    }
                 }
             }
-        }
 
+        }
         return exprElement;
     }
 

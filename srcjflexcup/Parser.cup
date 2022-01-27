@@ -320,11 +320,12 @@ ExprList ::= Expr:e1
             :}
         | Expr:e1 COMMA ExprList:list {: RESULT = list.add(e1); :}
         | OUTPAR ID:id
-            {: ArrayList<ExprOp> l = new ArrayList<ExprOp>();
-               l.add(0,new ExprOp(new Id(id)));
-               RESULT = new ExprListOp(l);
+            {:
+                ArrayList<ExprOp> l = new ArrayList<ExprOp>();
+                l.add(0,new ExprOp("out",new Id(id)));
+                RESULT = new ExprListOp(l);
             :}
-        | OUTPAR ID:id COMMA ExprList:list {: RESULT = list.add(new ExprOp(new Id(id)));:}
+        | OUTPAR ID:id COMMA ExprList:list {: RESULT = list.add(new ExprOp("out" ,new Id(id)));:}
         ;
 
 /*Expr ::= TRUE
