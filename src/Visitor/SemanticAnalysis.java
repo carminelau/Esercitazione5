@@ -12,7 +12,7 @@ import java.util.Map;
 //modifiche
 //riga 188, 198, 583, 586
 
-public class SemanticAnalysis implements Visitor{
+public class SemanticAnalysis implements Visitor {
 
     private TypeEnviroment type = new TypeEnviroment();
 
@@ -23,15 +23,15 @@ public class SemanticAnalysis implements Visitor{
          * in questo caso devo sommare il numero dei valori di ritorno con il numero di operazioni
          * se questa somma è uguale al numero di variabili a sx dell'assegnazione non ci sono errori
          * */
-            if (exprOp.getStatement() != null) {
-                CallProcOp c = (CallProcOp) exprOp.getStatement();
-                if (type.lookup(c.getId()) == null) {
-                    throw new Error("Funzione " + c.getId() + " non dichiarata");
-                }
+        if (exprOp.getStatement() != null) {
+            CallProcOp c = (CallProcOp) exprOp.getStatement();
+            if (type.lookup(c.getId()) == null) {
+                throw new Error("Funzione " + c.getId() + " non dichiarata");
             }
         }
+    }
 
-    private void checkTypeProc(ArrayList<ExprOp> exprOps, ArrayList<String> idNames, int numVar) {
+    private void checkTypeProc(ArrayList<ExprOp> exprOps, String idName, int numVar) {
         /*
          * Controllo se ho più chiamate a funzione e variabili nell'assegnazione
          * Ad esempio ---->id,id1,id2,id3 := fun1(),9+4,fun2()
@@ -46,18 +46,14 @@ public class SemanticAnalysis implements Visitor{
                 if (type.lookup(c.getId()) == null) {
                     throw new Error("Funzione " + c.getId() + " non dichiarata");
                 }
-                returnNum += type.lookup(c.getId()).getReturnType().size();
             }
             size--;
-        }
-        if (idNames.size() != returnNum + numVar) {
-            throw new Error("Errore sul numero di valori ritornati dalla funzione");
         }
     }
 
     public String arithmeticCheckType(ExprOp e) {
         //Se la variabile è un boolean oppure una stringa è un errore
-        if (e.getVar() instanceof Boolean ) {
+        if (e.getVar() instanceof Boolean) {
             throw new Error("Type missmatch1 ");
         }
         //Se è un id controllo nella tabella dei simboli il tipo
@@ -71,12 +67,8 @@ public class SemanticAnalysis implements Visitor{
         }
         //Se è una chiamata a funzione controllo il tipo di ritorno
         if (e.getStatement() != null && e.getStatement() instanceof CallProcOp c) {
-            ArrayList<String> types = type.lookup(c.getId()).getReturnType();
-            if (types.size() == 1) {
-                return types.get(0);
-            } else {
-                throw new Error("Errore");
-            }
+            String types = type.lookup(c.getId()).getReturnType();
+            return types;
         }
 
         //Altrimenti prendo il tipo da getClass()
@@ -153,18 +145,17 @@ public class SemanticAnalysis implements Visitor{
             }
             op.setType("bool");
 
-        } else if (op instanceof StrConcatOp){
+        } else if (op instanceof StrConcatOp) {
             if (!e1Type.equals(e2Type)) {
                 if ((e1Type.equals("integer") || e1Type.equals("real") || e1Type.equals("string")) && (e2Type.equals("integer") || e2Type.equals("real") || e1Type.equals("string"))) {
                     op.setType("string");
-                }
-                else {
+                } else {
                     throw new Error(("Type mismatch2"));
                 }
             } else {
                 op.setType("string");
             }
-        }else {
+        } else {
             op.setType(arithmeticCheckType(e1Type, e2Type));
         }
     }
@@ -188,10 +179,7 @@ public class SemanticAnalysis implements Visitor{
             Record record = type.lookup(id.toString());
             return record.getType();
         } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp c) {
-            if (type.lookup(c.getId()).getReturnType().size() > 1) {
-                throw new Error("Non è possibile confrontare più valori");
-            }
-            return type.lookup(c.getId()).getReturnType().get(0);
+            return type.lookup(c.getId()).getReturnType();
         } else {
             return getType(e);
         }
@@ -203,13 +191,8 @@ public class SemanticAnalysis implements Visitor{
 
         programOp.getVarDeclOpList().accept(this);//popola la tabella dei simboli con le variabili
         programOp.getProcOpList().accept(this);
-        if(programOp.getMain() != null) {
+        if (programOp.getMain() != null) {
             programOp.getMain().accept(this);
-            Record r = new Record();
-            r.setSym("main");
-            r.setKind("method");
-
-            type.addId(r);
 
         } else {
             //controllo se è stato implementato il metodo main altrimenti è un errore
@@ -217,6 +200,9 @@ public class SemanticAnalysis implements Visitor{
                 throw new Error("Deve esserci la funzione main");
             }
         }
+        System.out.println("SemanticAnalysis PROGRAMOP{" +
+                "type=" + type +
+                '}');
 
         type.exitScope();
         return programOp;
@@ -256,9 +242,9 @@ public class SemanticAnalysis implements Visitor{
     public Object visit(AssignStatOp assignStatOp) {
         //id := var ----> controllo id se è stata dichiarata
         String id = assignStatOp.getId().toString();
-            if (type.lookup(id) == null) {
-                throw new Error("Variabile '" + id + "' non dichiarata");
-            }
+        if (type.lookup(id) == null) {
+            throw new Error("Variabile '" + id + "' non dichiarata");
+        }
 
         /*
             variabile j che mi serve per confrontare correttamente i tipi di ritorno quando ho più chiamate a funzione
@@ -278,83 +264,81 @@ public class SemanticAnalysis implements Visitor{
                 controllo se il numero di variabili dell'assegnazione corrisponde
                 ---> id := 5,7; Errore Semantico
             */
-            if (e.getOperation() != null) {
-                Record r = type.lookup(idn);
-                if (e.getOperation().getOpType()!= null) {
-                    if (e.getOperation().getOpType().equals("integer") && r.getType().equals("real")) {
-                        //compatibile
-                    } else if (!e.getOperation().getOpType().equals(r.getType())) {
-                        throw new Error("Tipo " + assignStatOp.getId().toString() + " " +
-                                r.getType() + " ma tipo espressione " + e.getOperation().getOpType());
-                    }
+        if (e.getOperation() != null) {
+            Record r = type.lookup(idn);
+            if (e.getOperation().getOpType() != null) {
+                if (e.getOperation().getOpType().equals("integer") && r.getType().equals("real")) {
+                    //compatibile
+                } else if (!e.getOperation().getOpType().equals(r.getType())) {
+                    throw new Error("Tipo " + assignStatOp.getId().toString() + " " +
+                            r.getType() + " ma tipo espressione " + e.getOperation().getOpType());
                 }
-            } else if (e.getVar() != null) {
-                //caso in cui ho a,b,c := func(),var;
+            }
+        } else if (e.getVar() != null) {
+            //caso in cui ho a,b,c := func(),var;
 
-                String idName = assignStatOp.getId().toString();
+            String idName = assignStatOp.getId().toString();
 
-                if (e.getVar() instanceof Id id2) {
-                    if (type.lookup(id2.toString()) == null || type.lookup(id2.toString())
-                            .getKind().equals("method")) {
-                        throw new Error(id2 + " non dichiarata");
-                    }
-
-                    if (type.lookup(id2.toString()).getType().equals("integer") &&
-                            type.lookup(idName).getType().equals("real")) {
-                        //Compatibile
-                    } else if (!type.lookup(id2.toString()).getType().equals
-                            (type.lookup(idName).getType())) {
-                        throw new Error("Tipo variabile " + type.lookup(idName).getSym() + " " +
-                                type.lookup(idName).getType() + " ma la variabile " +
-                                type.lookup(id2.toString()).getSym() + " è " +
-                                type.lookup(id2.toString()).getType());
-                    }
-
-                } else {
-                    //è una costante
-                    if (e.getType().contains("Integer") &&
-                            type.lookup(idName).getType().equals("real")) {
-                        //Compatibile
-                    } else if (!e.getType().toLowerCase().contains(type.lookup(idName).getType())) {
-                        throw new Error("Tipo variabile " + type.lookup(idName).getSym() + " " +
-                                type.lookup(idName).getType() + " ma costante " + e.getType());
-                    }
-
+            if (e.getVar() instanceof Id id2) {
+                if (type.lookup(id2.toString()) == null || type.lookup(id2.toString())
+                        .getKind().equals("method")) {
+                    throw new Error(id2 + " non dichiarata");
                 }
-            } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp callProcOp) {
+
+                if (type.lookup(id2.toString()).getType().equals("integer") &&
+                        type.lookup(idName).getType().equals("real")) {
+                    //Compatibile
+                } else if (!type.lookup(id2.toString()).getType().equals
+                        (type.lookup(idName).getType())) {
+                    throw new Error("Tipo variabile " + type.lookup(idName).getSym() + " " +
+                            type.lookup(idName).getType() + " ma la variabile " +
+                            type.lookup(id2.toString()).getSym() + " è " +
+                            type.lookup(id2.toString()).getType());
+                }
+
+            } else {
+                //è una costante
+                if (e.getType().contains("Integer") &&
+                        type.lookup(idName).getType().equals("real")) {
+                    //Compatibile
+                } else if (!e.getType().toLowerCase().contains(type.lookup(idName).getType())) {
+                    throw new Error("Tipo variabile " + type.lookup(idName).getSym() + " " +
+                            type.lookup(idName).getType() + " ma costante " + e.getType());
+                }
+
+            }
+        } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp callProcOp) {
                 /*
                     caso in cui assegno ad una variabile il valore di ritorno di una funzione
                     a:=func() || a,b,c:=fun();
                 */
 
-                //controllo che i parametri passati alla funzione siano corretti
-                callProcOp.accept(this);
+            //controllo che i parametri passati alla funzione siano corretti
+            callProcOp.accept(this);
 
-                ArrayList<String> returnTypes = type.lookup(callProcOp.getId()).getReturnType();
-                String idName2 = assignStatOp.getId().toString();
+            String returnTypes = type.lookup(callProcOp.getId()).getReturnType();
+            String idName2 = assignStatOp.getId().toString();
 
                     /*
                         caso in cui una funzione ritorna più valori ma cerco si assegarli ad un'unica variabile
                         fun() int,int,int
                         c := fun(). ERRORE
                      */
-                if(returnTypes != null) {
-                    if (returnTypes.size() > 1) {
-                        throw new Error("Errore sul numero di valori dell'assegnazione");
-                    } else {
-                        checkTypeProc(e);
-                    }
+            if (returnTypes != null) {
 
-                    if (returnTypes.get(0).equals("integer") &&
-                            type.lookup(idName2).getType().equals("real")) {
-                        //Va bene
-                    } else if (!returnTypes.get(0).equals(type.lookup(idName2).getType())) {
-                        throw new Error("Tipo id " + type.lookup(idName2).getSym() + " " +
-                                type.lookup(idName2).getType() +
-                                " ma tipo ritorno funzione '" + callProcOp.getId() + "': " + returnTypes.get(0));
-                    }
+                    checkTypeProc(e);
+
+
+                if (returnTypes.equals("integer") &&
+                        type.lookup(idName2).getType().equals("real")) {
+                    //Va bene
+                } else if (!returnTypes.equals(type.lookup(idName2).getType())) {
+                    throw new Error("Tipo id " + type.lookup(idName2).getSym() + " " +
+                            type.lookup(idName2).getType() +
+                            " ma tipo ritorno funzione '" + callProcOp.getId() + "': " + returnTypes);
                 }
             }
+        }
         return null;
     }
 
@@ -375,79 +359,96 @@ public class SemanticAnalysis implements Visitor{
 
             ArrayList<String> paramTypes = type.lookup(callProcOp.getId()).getParamType();
 
-                int funNum = 0, varNum = 0;
-                ArrayList<ExprOp> exprlist = callProcOp.getExprList().getExprlist();
+            int funNum = 0, varNum = 0;
+            ArrayList<ExprOp> exprlist = callProcOp.getExprList().getExprlist();
 
-                for (ExprOp e : callProcOp.getExprList().getExprlist()) {
-                    if (e.getVar() != null || e.getOperation() != null) {
-                        varNum++;
-                    } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp) {
-                        funNum++;
+            for (ExprOp e : callProcOp.getExprList().getExprlist()) {
+                if (e.getVar() != null || e.getOperation() != null) {
+                    varNum++;
+                } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp) {
+                    funNum++;
+                }
+            }
+            if (funNum == 0 && paramTypes.size() != varNum) {
+                //caso fun(a,b,c)
+                throw new Error("Errore");
+            }
+            int j = 0;
+
+            for (int i = 0; i < exprlist.size(); i++) {
+                ExprOp e = exprlist.get(i);
+                if (e.getOperation() != null) {
+                    e.getOperation().accept(this);
+                    //func(4+8);
+                    if (e.getOperation().getOpType().equals("integer") && paramTypes.get(j).equals("real")) {
+                        //Compatibile
+                    } else if (!e.getOperation().getOpType().equals(paramTypes.get(j))) {
+                        throw new Error("Errore");
                     }
-                }
-                if (funNum == 0 && paramTypes.size() != varNum) {
-                    //caso fun(a,b,c)
-                    throw new Error("Errore");
-                }
-                int j = 0;
+                    if (funNum > 0) {
+                        j++;
+                    }
 
-                for (int i = 0; i < exprlist.size(); i++) {
-                    ExprOp e = exprlist.get(i);
-                    if (e.getOperation() != null) {
-                        e.getOperation().accept(this);
-                        //func(4+8);
-                        if (e.getOperation().getOpType().equals("integer") && paramTypes.get(j).equals("real")) {
+                } else if (e.getVar() != null) {
+                    if (e.getVar() instanceof Id id) {
+                        Record r = type.lookup(id.toString());
+                        if (paramTypes.get(j).equals("real") && r.getType().equals("integer")) {
                             //Compatibile
-                        } else if (!e.getOperation().getOpType().equals(paramTypes.get(j))) {
+                        } else if (!paramTypes.get(j).contains(r.getType())) {
                             throw new Error("Errore");
                         }
-                        if (funNum > 0) {
-                            j++;
+                    } else {
+                        //é una costante
+                        if (e.getType().contains("integer") &&
+                                paramTypes.get(j).equals("real")) {
+                            //Compatibile
+                        } else if (!e.getType().toLowerCase().contains(paramTypes.get(j))) {
+                            throw new Error("Errore");
                         }
+                    }
+                    j++;
+                } else if (e.getVar() != null && e.getOut().equalsIgnoreCase("out")) {
+                    if (e.getVar() instanceof Id id) { //COMPILATORI AL LIBRETTO
+                        Record r = type.lookup(id.toString());
+                        if (paramTypes.get(j).equals("real") && r.getType().equals("integer")) {
+                            //Compatibile
+                        } else if (!paramTypes.get(j).equals(r.getType())) {
+                            throw new Error("Errore");
+                        }
+                        if (r.getType().equalsIgnoreCase("integer")) {
+                            r.setType("out integer");
+                        } else if (r.getType().equalsIgnoreCase("real")) {
+                            r.setType("out real");
+                        } else if (r.getType().equalsIgnoreCase("string")) {
+                            r.setType("out string");
+                        }
+                    } else {
+                        //é una costante
+                        if (e.getType().contains("integer") &&
+                                paramTypes.get(j).equals("real")) {
+                            //Compatibile
+                        } else if (!e.getType().toLowerCase().contains(paramTypes.get(j))) {
+                            throw new Error("Errore");
+                        }
+                    }
+                    j++;
+                } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp c) {
+                    c.accept(this);
 
-                    } else if (e.getVar() != null) {
-                        if (e.getVar() instanceof Id id) {
-                            Record r = type.lookup(id.toString());
-                            if (paramTypes.get(j).equals("real") && r.getType().equals("integer")) {
-                                //Compatibile
-                            } else if (!paramTypes.get(j).equals(r.getType())) {
-                                throw new Error("Errore");
-                            }
-                        } else {
-                            //é una costante
-                            if (e.getType().contains("integer") &&
-                                    paramTypes.get(j).equals("real")) {
-                                //Compatibile
-                            } else if (!e.getType().toLowerCase().contains(paramTypes.get(j))) {
-                                throw new Error("Errore");
-                            }
+                    String returnTypes = type.lookup(c.getId()).getReturnType();
+                        if (funNum > 1) {
+                            //caso fun(fun1(),fun2()); || fun(fun1(),fun2(),a,b)
+                            checkTypeProc(exprlist, returnTypes, varNum);
+                        } else if (returnTypes.equals("integer") &&
+                                paramTypes.get(j).equals("real")) {
+                            //compatibile
+                        } else if (!returnTypes.equals(paramTypes.get(j))) {
+                            throw new Error("Errore");
                         }
                         j++;
-                    } else if (e.getStatement() != null && e.getStatement() instanceof CallProcOp c) {
-                        c.accept(this);
 
-                        ArrayList<String> returnTypes = type.lookup(c.getId()).getReturnType();
-                        if (varNum == 0 && funNum == 1 && returnTypes.size() != paramTypes.size()) {
-                            //caso fun(fun1());
-                            throw new Error("Errore");
-                        }
-                        for (int retIndex = 0; retIndex < returnTypes.size(); retIndex++) {
-                            if (varNum != 0 && funNum == 1 && returnTypes.size() + varNum != paramTypes.size()) {
-                                //caso fun(fun1(),a,b);
-                                throw new Error("Errore");
-                            } else if (funNum > 1) {
-                                //caso fun(fun1(),fun2()); || fun(fun1(),fun2(),a,b)
-                                checkTypeProc(exprlist,returnTypes,varNum);
-                            } else if (returnTypes.get(retIndex).equals("integer") &&
-                                    paramTypes.get(j).equals("real")) {
-                                //compatibile
-                            } else if (!returnTypes.get(retIndex).equals(paramTypes.get(j))) {
-                                throw new Error("Errore");
-                            }
-                            j++;
-                        }
-                    }
                 }
+            }
 
         } else {
             //Caso in cui non passo parametri ad una funzione che richiede parametri
@@ -494,16 +495,13 @@ public class SemanticAnalysis implements Visitor{
         } else if (operation instanceof DivOp divOp) {
             //System.out.print("div: ");
             setNodeType(divOp);
-        }
-        else if (operation instanceof DivIntOp divintOp) {
+        } else if (operation instanceof DivIntOp divintOp) {
             //System.out.print("divint: ");
             setNodeType(divintOp);
-        }
-        else if (operation instanceof PowOp powOp) {
+        } else if (operation instanceof PowOp powOp) {
             //System.out.print("pow: ");
             setNodeType(powOp);
-        }
-        else if (operation instanceof StrConcatOp strconcatOp) {
+        } else if (operation instanceof StrConcatOp strconcatOp) {
             //System.out.print("str-concat: ");
             setNodeType(strconcatOp);
         }
@@ -601,38 +599,53 @@ public class SemanticAnalysis implements Visitor{
         if (procOp.getList() != null) {
             for (ParDeclOp p : procOp.getList().getList()) {
                 if (p.getId().toString() != null) {
-                     paramType.add(p.getT().getTipo());
+                    if (p.getOut() == null) {
+                        paramType.add(p.getT().getTipo());
+                    } else{
+                        paramType.add("out " + p.getT().getTipo());
                     }
                 }
             }
+        }
+        System.out.println(paramType);
         r.setParamType(paramType);
+
+        if(procOp.getT()!=null)
+            r.setReturnType(procOp.getT().toString());
 
         type.addId(r);
 
         //inserisco nella tabella figlia della funzione le variabili locali alla funzione e i parametri
         type.enterScope(procOp.getTable());//crea una nuova tabella figlia
-        for(ParDeclOp params : procOp.getList().getList()){
+        for (ParDeclOp params : procOp.getList().getList()) {
+
             if (type.lookup(params.getId().toString()) == null) {
-                Record r1= new Record(params.getId().toString(),"var",params.getT().getTipo());
-                type.addId(r1);
+                if(params.getOut()!=null) {
+                    if (params.getOut().equalsIgnoreCase("out")) {
+                        Record r1 = new Record(params.getId().toString(), "var", "out " + params.getT().getTipo());
+                        type.addId(r1);
+                    }
+                }else {
+                    Record r1 = new Record(params.getId().toString(), "var", params.getT().getTipo());
+                    type.addId(r1);
+                }
             }
         }
 
         procOp.getVars().accept(this);
 
         //infine devo controllare il tipo di ritorno
-        ArrayList<String> resultTyes = type.cercaMetodo(procOp.getId().toString()).getReturnType();
+        String resultTyes = type.cercaMetodo(procOp.getId().toString()).getReturnType();
         if (resultTyes != null) {
             //Se c'è una variabile con lo stesso nome del metodo?
-            if (resultTyes.size() > 1) {
-                //una funzione non può restituire ad es. void,int
-                throw new Error("La funzione " + procOp.getId() + " non può ritornare " + resultTyes);
-            }
         }
         //continuo la visita controllando gli statment interni alla funzione
         if (procOp.getStats() != null)
             procOp.getStats().accept(this);
 
+        System.out.println("SemanticAnalysis PROCCOLO " + procOp.getId().toString() + "{" +
+                "type=" + type +
+                '}');
         type.exitScope();
         return null;
     }
@@ -695,15 +708,15 @@ public class SemanticAnalysis implements Visitor{
                     //Compatibile
                     //System.out.println(entry.getKey() + " --> " + entry.getValue().getType());
                 } else if (r.getType().equals("var")) {
-                    if(entry.getValue().getType().toLowerCase().contains("integer")){
+                    if (entry.getValue().getType().toLowerCase().contains("integer")) {
                         r.setType("integer");
-                    } else if (entry.getValue().getType().toLowerCase().contains("real")){
+                    } else if (entry.getValue().getType().toLowerCase().contains("real")) {
                         r.setType("real");
-                    } else if (entry.getValue().getType().toLowerCase().contains("bool")){
+                    } else if (entry.getValue().getType().toLowerCase().contains("bool")) {
                         r.setType("bool");
                     }
                     //Compatibile
-                }else {
+                } else {
 
                     throw new Error("Type missmatch8 ");
                 }
@@ -713,14 +726,8 @@ public class SemanticAnalysis implements Visitor{
                     if (type.lookup(callProcOp.getId()) == null) {
                         throw new Error("Funzione '" + callProcOp.getId() + "' non dichiarata");
                     }
-                    ArrayList<String> returnTypes = type.lookup(callProcOp.getId()).getReturnType();
-                    String returnType = returnTypes.get(returnTypes.size() - 1);
-                    if (returnTypes.size() > 1) {
-                        //caso in cui ho una funzione che ritorna più tipi non posso assegnarla ad un'unica variabile
-                        throw new Error("Tipo di ritorno funzione: '" +
-                                callProcOp.getId() + "' " + returnTypes + " ma tipo id: '" + entry.getKey() + "' " +
-                                type.lookup(entry.getKey()).getType());
-                    } else if (type.lookup(entry.getKey()).getType().equals("real") &&
+                    String returnType = type.lookup(callProcOp.getId()).getReturnType();
+                    if (type.lookup(entry.getKey()).getType().equals("real") &&
                             returnType.equals("integer")) {
                         //Va bene
                     } else if (!returnType.equals(type.lookup(entry.getKey()).getType())) {
@@ -735,7 +742,7 @@ public class SemanticAnalysis implements Visitor{
 
     @Override
     public Object visit(VarDeclListOp varDeclList) {
-         for (VarDeclOp varDeclOp : varDeclList.getList()) {
+        for (VarDeclOp varDeclOp : varDeclList.getList()) {
             varDeclOp.accept(this);
         }
         return null;
@@ -768,8 +775,8 @@ public class SemanticAnalysis implements Visitor{
                 }
             }
         }
-        if(whileStatOp.getVarDeclList() != null){
-            for ( VarDeclOp vardeclop : whileStatOp.getVarDeclList().getList()){
+        if (whileStatOp.getVarDeclList() != null) {
+            for (VarDeclOp vardeclop : whileStatOp.getVarDeclList().getList()) {
                 vardeclop.accept(this);
             }
         }
@@ -805,7 +812,7 @@ public class SemanticAnalysis implements Visitor{
         for (String id : readlnStatOp.getIdList().getIdList()) {
             if (type.lookup(id) == null) {
                 throw new Error("Variabile '" + id + "' non dichiarata");
-            }else if(type.lookup(id).getKind()!="var"){
+            } else if (type.lookup(id).getKind() != "var") {
                 throw new Error("Metodo '" + id + "' non dichiarata");
             }
         }
@@ -840,16 +847,14 @@ public class SemanticAnalysis implements Visitor{
             if (type.lookup(c.getId()) == null) {
                 throw new Error("funzione " + c.getId() + "non dichiarata");
             } else {
-                if (type.lookup(c.getId()).getReturnType().size() > 1) {
-                    throw new Error("Errore sul numero di parametri ritornati dalla funzione " + c.getId());
-                } else if (type.lookup(c.getId()).getReturnType().size() == 1) {
-                    if (!type.lookup(c.getId()).getReturnType().get(0).equals("bool")) {
-                        throw new Error("La funzione " + c.getId() + " deve ritronare un bool");
+                if (type.lookup(c.getId()).getReturnType() != null) {
+                    if (!type.lookup(c.getId()).getReturnType().equals("bool")) {
+                        throw new Error("La funzione " + c.getId() + " deve ritornare un bool");
                     }
                 }
             }
         }
-        if(ifStatOp.getVars() != null)
+        if (ifStatOp.getVars() != null)
             ifStatOp.getVars().accept(this);
         if (ifStatOp.getStatList() != null)
             ifStatOp.getStatList().accept(this);
@@ -872,7 +877,7 @@ public class SemanticAnalysis implements Visitor{
             String id = ((Id) exprOp.getVar()).toString();
             if (type.lookup(id) == null) {
                 throw new Error("Variabile '" + id + "' non dichiarata");
-            }else if(!type.lookup(id).getKind().equals("var")){
+            } else if (!type.lookup(id).getKind().equals("var")) {
                 throw new Error("Metodo '" + id + "' non dichiarata");
             }
         } else if (exprOp.getOperation() != null) {
@@ -885,9 +890,9 @@ public class SemanticAnalysis implements Visitor{
 
     @Override
     public Object visit(TypeOp typeOp) {
-        if (typeOp.toString() == null){
+        if (typeOp.toString() == null) {
             throw new Error("Tipo null");
-        } else if (!typeOp.toString().equals("bool") || !typeOp.toString().equals("real") || !typeOp.toString().equals("integer") || !typeOp.toString().equals("string") ){
+        } else if (!typeOp.toString().equals("bool") || !typeOp.toString().equals("real") || !typeOp.toString().equals("integer") || !typeOp.toString().equals("string")) {
             throw new Error("Tipo non valido");
         }
         return null;
@@ -899,7 +904,7 @@ public class SemanticAnalysis implements Visitor{
             String id = ((Id) returnStatOp.getExpr().getVar()).toString();
             if (type.lookup(id) == null) {
                 throw new Error("Variabile di ritorno'" + id + "' non dichiarata");
-            }else if(!type.lookup(id).getKind().equals("var")){
+            } else if (!type.lookup(id).getKind().equals("var")) {
                 throw new Error("Metodo '" + id + "' non dichiarata");
             }
         } else if (returnStatOp.getExpr().getOperation() != null) {
@@ -917,6 +922,9 @@ public class SemanticAnalysis implements Visitor{
         main.getVarDeclOpList().accept(this);//popola la tabella dei simboli con le variabili
         main.getStats().accept(this);
 
+        System.out.println("SemanticAnalysis MAIN{" +
+                "type=" + type +
+                '}');
         type.exitScope();
         return main;
     }

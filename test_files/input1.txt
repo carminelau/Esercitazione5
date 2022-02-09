@@ -8,9 +8,8 @@
 
 var c := 1;
 
-
 # fa somma e restituisce il risultato
-fun sommac(real a, real b, out string par): real
+fun sommac(real a, real b, out integer par): real
 
 	real result;
 
@@ -87,6 +86,7 @@ main
 	var ans := 'si';
 	var op := '';
 	real risultato := 0;
+    integer pippo := 5;
 
     while ans = 'si' loop
         ?: 'Scegli operazione 1 ADD 2 DIFF 3 MUL 4 DIV 5 POW';
@@ -96,7 +96,7 @@ main
         ?: 'Inserisci il secondo valore:';
         % b;
         if op = '1' then
-            risultato := sommac(a,b, @ans);
+            risultato := sommac(a,b, @pippo);
             stampa('la somma di a e b è ' & risultato);
         end if;
         if op = '2' then

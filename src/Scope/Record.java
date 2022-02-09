@@ -7,7 +7,7 @@ public class Record {
     private String sym;
     private String kind;
     private String type;
-    private ArrayList<String> returnType;
+    private String returnType;
     private ArrayList<String> paramType;
 
     public Record(String sym, String kind, String type){
@@ -17,7 +17,7 @@ public class Record {
         returnType  = null;
     }
 
-    public Record(String sym, String kind, String type,ArrayList<String> returnType,ArrayList<String> paramType){
+    public Record(String sym, String kind, String type,String returnType,ArrayList<String> paramType){
         this.sym = sym;
         this.type = type;
         this.kind = kind;
@@ -41,7 +41,7 @@ public class Record {
         return paramType;
     }
 
-    public ArrayList<String> getReturnType() {
+    public String getReturnType() {
         return returnType;
     }
 
@@ -61,7 +61,7 @@ public class Record {
         this.type = type;
     }
 
-    public void setReturnType(ArrayList<String> returnType) {
+    public void setReturnType(String returnType) {
         this.returnType = returnType;
     }
 
@@ -70,7 +70,7 @@ public class Record {
     }
 
     public void addReturnType(String t){
-        this.returnType.add(t);
+        this.returnType=t;
     }
 
     @Override
@@ -88,14 +88,13 @@ public class Record {
 
     @Override
     public String toString() {
-        return (kind.equals("var") ?
-                "Record{" +
-                        "sym='" + sym + '\'' +
-                        ", kind='" + kind + '\'' +
-                        ", type=" + type +
-                        "}\n" : "Record{" +
-                "sym='" + sym + '\'' +
-                ", kind='" + kind + '\'' + ", type=" + returnType+"\n");
-
+        if(getKind().equalsIgnoreCase("var")){
+            return "{ sym = '" + getSym() + "', kind = '" + getKind() + "', type = '" + getType() +"'}\n" ;
+        } else{
+            if(getReturnType()==null)
+                return "{ sym = '" + getSym() + "', kind = '" + getKind() + "', type = '" + getParamType() +"'}\n";
+            else
+                return "{ sym = '" + getSym() + "', kind = '" + getKind() + "', type = '" + getParamType() + "-> "+ getReturnType() +"'}\n";
+        }
     }
 }

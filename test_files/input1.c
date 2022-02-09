@@ -3,9 +3,21 @@
 #include <malloc.h> 
 #include <stdbool.h> 
 
+float sommac(float,float,int*);
+
+float differenzac(float,float);
+
+float moltiplicazionec(float,float);
+
+float divisionec(float,float);
+
+float potenzac(float,float);
+
 int c = 1;
-float sommac(float a,float b){
+float sommac(float a,float b,int* par){
 float result = a+b;
+printf(par);
+printf("\n");
 return result; 
 }
 float differenzac(float a,float b){
@@ -39,6 +51,7 @@ float a = 0, b = 0;
 char* ans = "si";
 char* op = "";
 float risultato = 0;
+int pippo = 5;
 while(strcmp(ans,"si")== 0){
 printf("Scegli operazione 1 ADD 2 DIFF 3 MUL 4 DIV 5 POW\t");
 op = malloc(sizeof(char));
@@ -48,7 +61,7 @@ scanf("%f",&a);
 printf("Inserisci il secondo valore:\t");
 scanf("%f",&b);
 if(strcmp(op,"1")== 0){
-risultato = sommac(a,b);
+risultato = sommac(a,b,&pippo);
 char buffer[29];
 snprintf(buffer, sizeof(buffer),"la somma di a e b è %f", risultato);
 stampa(buffer);
