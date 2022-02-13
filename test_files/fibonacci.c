@@ -51,9 +51,9 @@ x = 10;
 return number; 
 }
 else{
-
-
-retur--n fibonacci(number1)+fibonacci(number2); 
+return 
+fibonacci(number-1)+
+fibonacci(number-2); 
 }
 }
 int main(  ){
