@@ -1,0 +1,21 @@
+integer x;
+fun fibonacci(integer number): integer
+
+    if number = 0 or number = 1 then
+       x := 10;
+        return number;
+    else
+        return fibonacci(number - 1) + fibonacci(number - 2);
+    end if;
+end fun;
+
+main
+
+    integer number;
+
+    ?. "Inserisci un numero:";
+    % number;
+
+    ?. "Il valore di fibonacci per il numero " & number & " è uguale a " & fibonacci(number);
+
+end main;
