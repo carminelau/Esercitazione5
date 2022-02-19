@@ -1,9 +1,16 @@
+fun visualizzaMenu(out string pippo, out integer input, out real giorgio): string
+
+    ?. pippo;
+    ?. input;
+    ?. giorgio;
+    return "ciao inserisci un nuomero";
+
+end fun;
+
 main
-    string la := 'la';
-    string ciao :='';
-    string str :='';
-    real pippo := 10;
-    ciao := 'pippo' & 'la' & pippo & '34';
-    str:= 'ciao' & 'pippo';
+    integer input;
+    real giorgio := 4.4;
+    string miao:= "MIAOOOOO";
+    visualizzaMenu(@miao, @input, @giorgio);
 
 end main;

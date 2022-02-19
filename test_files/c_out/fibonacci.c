@@ -45,19 +45,21 @@ char* concatC_C(char* stringa, char* stringa2, int dim1, int dim2){
 }
 int fibonacci(int);
 
-int int fibonacci(int number){
-if(number==0||number==1){
-x = 10;
-return number; 
-}
-else{
-return 
-fibonacci(number-1)+
-fibonacci(number-2); 
-}
+int x;
+int fibonacci(int number){
+    if(number==0||number==1){
+        x = 10;
+        return number;
+    }
+    else{
+        return fibonacci(number-1)+fibonacci(number-2);
+    }
 }
 int main(  ){
-int printf("Inserisci un numero:\n");
-scanf("%d",&number);
-return 0;
+    int number;
+    printf("Inserisci un numero:\n");
+    scanf("%d",&number);
+    printf(concatC_I(concatC_C(concatC_I("Il valore di fibonacci per il numero ",number,37,1)," è: ",50,4),fibonacci(number),50,1));
+    printf("\n");
+    return 0;
 }

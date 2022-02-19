@@ -1,9 +1,39 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><ProgramOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"x")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp></varDeclListOp><procListOp><procOp>fibonacci<ParDeclListOp><ParDeclOp>(type,"integer")number</ParDeclOp></ParDeclListOp>integer<varDeclListOp/><StatListOp><IfStatOp><ExprOp><OrOp><ExprOp><EqOp><ExprOp>(Id,"number")</ExprOp><ExprOp>(Integer_const,"0")</ExprOp></EqOp></ExprOp><ExprOp><EqOp><ExprOp>(Id,"number")</ExprOp><ExprOp>(Integer_const,"1")</ExprOp></EqOp></ExprOp></OrOp></ExprOp><StatListOp><AssignStatOp>x<ExprOp>(Integer_const,"10")</ExprOp></AssignStatOp><ReturnStatOp><ExprOp>(Id,"number")</ExprOp></ReturnStatOp></StatListOp><varDeclListOp/><ElseOp><StatListOp><ReturnStatOp><ExprOp><AddOp><ExprOp><CallProcOp>
-(ID,"fibonacci")
-<ExprListOp><ExprOp><DiffOp><ExprOp>(Id,"number")</ExprOp><ExprOp>(Integer_const,"1")</ExprOp></DiffOp></ExprOp></ExprListOp></CallProcOp></ExprOp><ExprOp><CallProcOp>
-(ID,"fibonacci")
-<ExprListOp><ExprOp><DiffOp><ExprOp>(Id,"number")</ExprOp><ExprOp>(Integer_const,"2")</ExprOp></DiffOp></ExprOp></ExprListOp></CallProcOp></ExprOp></AddOp></ExprOp></ReturnStatOp></StatListOp></ElseOp></IfStatOp></StatListOp></procOp></procListOp><MainOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"number")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp></varDeclListOp><StatListOp><WriteStatOp><ExprOp>(String_const,"Inserisci un numero:")</ExprOp></WriteStatOp><ReadStatOp><IdListOp>
-(ID,"number")
-</IdListOp></ReadStatOp><WriteStatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp>(String_const,"Il valore di fibonacci per il numero ")</ExprOp><ExprOp>(Id,"number")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const," è uguale a ")</ExprOp></StrConcatOp></ExprOp><ExprOp><CallProcOp>
-(ID,"fibonacci")
-<ExprListOp><ExprOp>(Id,"number")</ExprOp></ExprListOp></CallProcOp></ExprOp></StrConcatOp></ExprOp></WriteStatOp></StatListOp></MainOp></ProgramOp>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><ProgramOp><varDeclListOp><varDecOp>var<idListInitOp>(Id,"DIV")<ExprOp>(Integer_const,"5")</ExprOp>(Id,"ADD")<ExprOp>(Integer_const,"2")</ExprOp>(Id,"SHOWMENU")<ExprOp>(Integer_const,"1")</ExprOp>(Id,"TIMES")<ExprOp>(Integer_const,"4")</ExprOp>(Id,"STOP")<ExprOp>(Integer_const,"0")</ExprOp>(Id,"MINUS")<ExprOp>(Integer_const,"3")</ExprOp></idListInitOp></varDecOp></varDeclListOp><procListOp><procOp>visualizzaMenustring<varDeclListOp/><StatListOp><ReturnStatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp>(String_const,"Digita uno dei seguenti numeri per svolgere un'operazione")</ExprOp><ExprOp>(String_const,"0) Termina il programma")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const,"1) Mostra il menù")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const,"2) Effettua una somma fra due numeri")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const,"3) Effettua una differenza fra due numeri")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const,"4) Effettua una moltiplicazione fra due numeri")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const,"5) Effettua una divisione fra due numeri")</ExprOp></StrConcatOp></ExprOp></ReturnStatOp></StatListOp></procOp><procOp>somma<ParDeclListOp><ParDeclOp>(type,"integer")x</ParDeclOp><ParDeclOp>(type,"integer")y</ParDeclOp></ParDeclListOp>integer<varDeclListOp/><StatListOp><ReturnStatOp><ExprOp><AddOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp></AddOp></ExprOp></ReturnStatOp></StatListOp></procOp><procOp>moltiplicazione<ParDeclListOp><ParDeclOp>(type,"integer")x</ParDeclOp><ParDeclOp>(type,"integer")y</ParDeclOp><ParDeclOp>(type,"integer")result</ParDeclOp></ParDeclListOp><varDeclListOp/><StatListOp><AssignStatOp>result<ExprOp><MulOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp></MulOp></ExprOp></AssignStatOp></StatListOp></procOp><procOp>sottrazione<ParDeclListOp><ParDeclOp>(type,"integer")x</ParDeclOp><ParDeclOp>(type,"integer")y</ParDeclOp></ParDeclListOp>integer<varDeclListOp><varDecOp>var<idListInitOp>(Id,"differenza")<ExprOp>(Integer_const,"0")</ExprOp></idListInitOp></varDecOp></varDeclListOp><StatListOp><AssignStatOp>differenza<ExprOp><DiffOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp></DiffOp></ExprOp></AssignStatOp><ReturnStatOp><ExprOp>(Id,"differenza")</ExprOp></ReturnStatOp></StatListOp></procOp><procOp>divisione<ParDeclListOp><ParDeclOp>(type,"integer")x</ParDeclOp><ParDeclOp>(type,"integer")y</ParDeclOp><ParDeclOp>(type,"real")result</ParDeclOp></ParDeclListOp><varDeclListOp/><StatListOp><AssignStatOp>result<ExprOp><DivOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp></DivOp></ExprOp></AssignStatOp></StatListOp></procOp></procListOp><MainOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"result")<ExprOp>(Integer_const,"0")</ExprOp></idListInitOp></varDecOp><varDecOp>real<idListInitOp>(Id,"resultDiv")<ExprOp>(real_const,"0.0")</ExprOp></idListInitOp></varDecOp><varDecOp>integer<idListInitOp>(Id,"input")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp><varDecOp>var<idListInitOp>(Id,"ERROR")<ExprOp>(String_const,"Valore di input non riconosciuto.")</ExprOp></idListInitOp></varDecOp></varDeclListOp><StatListOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp><WhileStatOp><varDeclListOp/><ExprOp><NeOp><ExprOp>(Id,"input")</ExprOp><ExprOp>(Integer_const,"0")</ExprOp></NeOp></ExprOp><StatListOp><IfStatOp><ExprOp><EqOp><ExprOp>(Id,"input")</ExprOp><ExprOp>(Id,"SHOWMENU")</ExprOp></EqOp></ExprOp><StatListOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp></StatListOp><varDeclListOp/><ElseOp><StatListOp><IfStatOp><ExprOp><EqOp><ExprOp>(Id,"input")</ExprOp><ExprOp>(Id,"ADD")</ExprOp></EqOp></ExprOp><StatListOp><ReadStatOp><IdListOp>
+(ID,"x")
+
+(ID,"y")
+</IdListOp></ReadStatOp><WriteStatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(String_const," + ")</ExprOp></StrConcatOp></ExprOp><ExprOp>(Id,"y")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const," = ")</ExprOp></StrConcatOp></ExprOp><ExprOp><CallProcOp>
+(ID,"somma")
+<ExprListOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp></ExprListOp></CallProcOp></ExprOp></StrConcatOp></ExprOp></WriteStatOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp></StatListOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"x")<ExprOp>(var is null</ExprOp>(Id,"y")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp></varDeclListOp><ElseOp><StatListOp><IfStatOp><ExprOp><EqOp><ExprOp>(Id,"input")</ExprOp><ExprOp>(Id,"MINUS")</ExprOp></EqOp></ExprOp><StatListOp><ReadStatOp><IdListOp>
+(ID,"x")
+
+(ID,"y")
+</IdListOp></ReadStatOp><WriteStatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(String_const," - ")</ExprOp></StrConcatOp></ExprOp><ExprOp>(Id,"y")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const," = ")</ExprOp></StrConcatOp></ExprOp><ExprOp><CallProcOp>
+(ID,"sottrazione")
+<ExprListOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp></ExprListOp></CallProcOp></ExprOp></StrConcatOp></ExprOp></WriteStatOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp></StatListOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"x")<ExprOp>(var is null</ExprOp>(Id,"y")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp></varDeclListOp><ElseOp><StatListOp><IfStatOp><ExprOp><EqOp><ExprOp>(Id,"input")</ExprOp><ExprOp>(Id,"TIMES")</ExprOp></EqOp></ExprOp><StatListOp><ReadStatOp><IdListOp>
+(ID,"x")
+
+(ID,"y")
+</IdListOp></ReadStatOp><CallProcOp>
+(ID,"moltiplicazione")
+<ExprListOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp><ExprOp>( out Id,"result")</ExprOp></ExprListOp></CallProcOp><WriteStatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(String_const," * ")</ExprOp></StrConcatOp></ExprOp><ExprOp>(Id,"y")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const," = ")</ExprOp></StrConcatOp></ExprOp><ExprOp>(Id,"result")</ExprOp></StrConcatOp></ExprOp></WriteStatOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp></StatListOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"x")<ExprOp>(var is null</ExprOp>(Id,"y")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp></varDeclListOp><ElseOp><StatListOp><IfStatOp><ExprOp><EqOp><ExprOp>(Id,"input")</ExprOp><ExprOp>(Id,"DIV")</ExprOp></EqOp></ExprOp><StatListOp><ReadStatOp><IdListOp>
+(ID,"x")
+
+(ID,"y")
+</IdListOp></ReadStatOp><CallProcOp>
+(ID,"divisione")
+<ExprListOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(Id,"y")</ExprOp><ExprOp>( out Id,"resultDiv")</ExprOp></ExprListOp></CallProcOp><WriteStatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp><StrConcatOp><ExprOp>(Id,"x")</ExprOp><ExprOp>(String_const," div ")</ExprOp></StrConcatOp></ExprOp><ExprOp>(Id,"y")</ExprOp></StrConcatOp></ExprOp><ExprOp>(String_const," = ")</ExprOp></StrConcatOp></ExprOp><ExprOp>(Id,"resultDiv")</ExprOp></StrConcatOp></ExprOp></WriteStatOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp></StatListOp><varDeclListOp><varDecOp>integer<idListInitOp>(Id,"x")<ExprOp>(var is null</ExprOp>(Id,"y")<ExprOp>(var is null</ExprOp></idListInitOp></varDecOp></varDeclListOp><ElseOp><StatListOp><WriteStatOp><ExprOp>(Id,"ERROR")</ExprOp></WriteStatOp><ReadStatOp><IdListOp>
+(ID,"input")
+</IdListOp></ReadStatOp></StatListOp></ElseOp></IfStatOp></StatListOp></ElseOp></IfStatOp></StatListOp></ElseOp></IfStatOp></StatListOp></ElseOp></IfStatOp></StatListOp></ElseOp></IfStatOp></StatListOp></WhileStatOp></StatListOp></MainOp></ProgramOp>

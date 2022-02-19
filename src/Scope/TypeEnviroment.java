@@ -33,6 +33,21 @@ public class TypeEnviroment {
         }
         return null;
     }
+
+    public Record lookup(String sym, boolean a) {
+
+        HashMap<String,Record> currentTable =  stack.get(stack.size()-1);
+
+        if(currentTable.containsKey(sym)){
+            return currentTable.get(sym);
+        }else{
+            currentTable = stack.get(0);
+            if(currentTable.containsKey(sym)){
+                return currentTable.get(sym);
+            }
+        }
+        return null;
+    }
     /*
      * Aggiunge il symbol nella tabella corrente
      * */

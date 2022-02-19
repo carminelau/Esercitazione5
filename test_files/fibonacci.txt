@@ -1,4 +1,5 @@
 integer x;
+
 fun fibonacci(integer number): integer
 
     if number = 0 or number = 1 then
@@ -16,6 +17,6 @@ main
     ?. "Inserisci un numero:";
     % number;
 
-    ?. "Il valore di fibonacci per il numero " & number & " è uguale a " & fibonacci(number);
+    ?. "Il valore di fibonacci per il numero " & number & " è: " & fibonacci(number);
 
 end main;

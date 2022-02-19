@@ -147,7 +147,7 @@ public class SemanticAnalysis implements Visitor {
 
         } else if (op instanceof StrConcatOp) {
             if (!e1Type.equals(e2Type)) {
-                if ((e1Type.equals("integer") || e1Type.equals("real") || e1Type.equals("string")) && (e2Type.equals("integer") || e2Type.equals("real") || e1Type.equals("string"))) {
+                if ((e1Type.equals("integer") || e1Type.equals("real") || e1Type.equals("string")) && (e2Type.equals("integer") || e2Type.equals("real") || e2Type.equals("string"))) {
                     op.setType("string");
                 } else {
                     throw new Error(("Type mismatch2"));
@@ -470,9 +470,11 @@ public class SemanticAnalysis implements Visitor {
 
     @Override
     public Object visit(ElseOp elseOp) {
+        type.enterScope(ElseOp.getTable());//crea una nuova tabella figlia
         if (elseOp.getStatList() != null) {
             elseOp.getStatList().accept(this);
         }
+        type.exitScope();
         return null;
     }
 
@@ -617,17 +619,19 @@ public class SemanticAnalysis implements Visitor {
 
         //inserisco nella tabella figlia della funzione le variabili locali alla funzione e i parametri
         type.enterScope(procOp.getTable());//crea una nuova tabella figlia
-        for (ParDeclOp params : procOp.getList().getList()) {
+        if(procOp.getList() != null) {
+            for (ParDeclOp params : procOp.getList().getList()) {
 
-            if (type.lookup(params.getId().toString()) == null) {
-                if(params.getOut()!=null) {
-                    if (params.getOut().equalsIgnoreCase("out")) {
-                        Record r1 = new Record(params.getId().toString(), "var", "out " + params.getT().getTipo());
+                if (type.lookup(params.getId().toString()) == null) {
+                    if (params.getOut() != null) {
+                        if (params.getOut().equalsIgnoreCase("out")) {
+                            Record r1 = new Record(params.getId().toString(), "var", "out " + params.getT().getTipo());
+                            type.addId(r1);
+                        }
+                    } else {
+                        Record r1 = new Record(params.getId().toString(), "var", params.getT().getTipo());
                         type.addId(r1);
                     }
-                }else {
-                    Record r1 = new Record(params.getId().toString(), "var", params.getT().getTipo());
-                    type.addId(r1);
                 }
             }
         }
@@ -775,6 +779,7 @@ public class SemanticAnalysis implements Visitor {
                 }
             }
         }
+        type.enterScope(whileStatOp.getTable());//crea una nuova tabella figlia
         if (whileStatOp.getVarDeclList() != null) {
             for (VarDeclOp vardeclop : whileStatOp.getVarDeclList().getList()) {
                 vardeclop.accept(this);
@@ -786,6 +791,7 @@ public class SemanticAnalysis implements Visitor {
                 statOp.accept(this);
             }
         }
+        type.exitScope();
         return null;
     }
 
@@ -854,10 +860,12 @@ public class SemanticAnalysis implements Visitor {
                 }
             }
         }
+        type.enterScope(ifStatOp.getTable());//crea una nuova tabella figlia
         if (ifStatOp.getVars() != null)
             ifStatOp.getVars().accept(this);
         if (ifStatOp.getStatList() != null)
             ifStatOp.getStatList().accept(this);
+        type.exitScope();
         if (ifStatOp.getElseStat() != null)
             ifStatOp.getElseStat().accept(this);
         return null;

@@ -1,0 +1,92 @@
+#*
+    scrivere un programma MyFun che
+    visualizzi un menu in cui un utente può scegliere l' operazione aritmetica da svolgere
+    richieda all'utente gli input (interi o double) necessari per svolgere l'operazione scelta
+    esegua l'operazione, restituisca il risultato e chieda se si vuol continuare
+    all'input 0 oppure 1 il programma  conclude oppure mostra il menu iniziale, rispettivamente.
+
+    N.B. si utilizzino almeno due funzioni. In generale, si cerchi di
+    utilizzare tutte le caratteristiche del linguaggio.
+#
+
+var STOP := 0, SHOWMENU := 1, ADD := 2,
+    MINUS := 3, TIMES := 4, DIV := 5;
+
+fun visualizzaMenu(): string
+
+    return "Digita uno dei seguenti numeri per svolgere un'operazione" & "0) Termina il programma" & "1) Mostra il menù" & "2) Effettua una somma fra due numeri" & "3) Effettua una differenza fra due numeri"
+    & "4) Effettua una moltiplicazione fra due numeri"
+    & "5) Effettua una divisione fra due numeri";
+
+end fun;
+
+fun somma(integer x, integer y): integer
+    return x + y;
+end fun;
+
+fun moltiplicazione(integer x, integer y, out integer result)
+    result := x * y; # Utilizziamo la variabile result
+end fun;
+
+fun sottrazione(integer x, integer y): integer
+    var differenza := 0;
+    differenza := x - y;
+    return differenza;
+end fun;
+
+fun divisione(integer x, integer y, out real result)
+    result := x / y;
+end fun;
+
+main
+
+    integer result := 0;
+    real resultDiv := 0.0;
+
+    integer input;
+    var ERROR := "Valore di input non riconosciuto.";
+
+
+    % input visualizzaMenu();
+
+    while input != 0 loop
+        if input = SHOWMENU then
+            % input visualizzaMenu();
+        else
+            if input = ADD then
+                integer x, y;
+                % x, y "Inserisci i due numeri:\t";
+
+                ?. x & " + " & y & " = " & somma(x, y);
+                % input "Scegli un'altra operazione: ";
+            else
+                if input = MINUS then
+                    integer x, y;
+                    % x, y "Inserisci i due numeri:\t";
+                    ?. x & " - " & y & " = " & sottrazione(x, y);
+                     % input "Scegli un'altra operazione: ";
+                else
+                    if input = TIMES then
+                        integer x, y;
+                        % x, y "Inserisci i due numeri:\t";
+                        moltiplicazione(x, y, @result);
+                        ?. x & " * " & y & " = " & result;
+                        % input "Scegli un'altra operazione: ";
+                    else
+                        if input = DIV then
+                            integer x, y;
+                            % x, y "Inserisci i due numeri:\t";
+                            divisione(x, y, @resultDiv);
+                            ?. x & " div " & y & " = " & resultDiv;
+                            % input "Scegli un'altra operazione: ";
+                        else
+                            ?. ERROR;
+                            % input "Scegli un'operazione riconosciuta: ";
+                        end if;
+                    end if;
+                end if;
+            end if;
+        end if;
+    end loop;
+
+end main;

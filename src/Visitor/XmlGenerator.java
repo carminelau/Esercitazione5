@@ -95,7 +95,8 @@ public class XmlGenerator implements Visitor {
     public Object visit(ProcOp proc) {
         Element procElement = document.createElement("procOp");
         procElement.appendChild(document.createTextNode(proc.getId().toString()));//nome funzione
-        procElement.appendChild((Element) proc.getList().accept(this));//parameetri funzione
+        if(proc.getList() != null)
+            procElement.appendChild((Element) proc.getList().accept(this));//parameetri funzione
         if (proc.getT() != null)
             procElement.appendChild(document.createTextNode(proc.getT().getTipo()));//nome funzione
         procElement.appendChild((Element) proc.getVars().accept(this)); // variabili locali alla funzione
@@ -109,9 +110,12 @@ public class XmlGenerator implements Visitor {
     @Override
     public Object visit(ParamDeclListOp paramDeclListOp) {
         Element paramListElement = document.createElement("ParDeclListOp");
-        for (ParDeclOp parDecl : paramDeclListOp.getList()) {
-            paramListElement.appendChild((Element) parDecl.accept(this));
+        if(paramDeclListOp.getList().size()!=0) {
+            for (ParDeclOp parDecl : paramDeclListOp.getList()) {
+                paramListElement.appendChild((Element) parDecl.accept(this));
+            }
         }
+
         return paramListElement;
     }
 

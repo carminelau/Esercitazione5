@@ -6,6 +6,11 @@ import Visitor.Visitor;
 public class ReadStatOp extends Statement{
 
     private IdListOp idList;
+
+    public ExprOp getExpr() {
+        return expr;
+    }
+
     private ExprOp expr;
 
     public ReadStatOp(IdListOp list) {

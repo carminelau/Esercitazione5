@@ -14,7 +14,7 @@ public class IfStatOp extends Statement{
     private StatListOp statList;
     private VarDeclListOp vars;
     private ElseOp elseStat;
-    private LinkedHashMap<String, Record> table;
+    private LinkedHashMap<String, Record> table= new LinkedHashMap<>();
 
     public IfStatOp(ExprOp e, VarDeclListOp vars,StatListOp statList,ElseOp elseStat) {
         this.e = e;
